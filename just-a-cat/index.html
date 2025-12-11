@@ -1,0 +1,1000 @@
+<!DOCTYPE html> 
+<html lang="en"> 
+<head> 
+    <meta charset="UTF-8"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>MEOW HELLO - The Purrfect Place</title> 
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Chewy&display=swap" rel="stylesheet">
+    
+    <style> 
+        /* STILI (RIMANGONO UGUALI) */
+        body { 
+            font-family: 'Poppins', sans-serif;
+            margin: 0; 
+            transition: background-color 0.3s ease; 
+        } 
+        
+        #catMaskState, #shopState, #checkoutState, #orderConfirmationState {
+            width: 100%; 
+            min-height: 100vh;
+            opacity: 0; 
+            transition: opacity 0.5s ease-in-out; 
+            display: none; 
+            box-sizing: border-box;
+            z-index: 1; 
+        }
+
+        #catMaskState {
+            display: flex; 
+            opacity: 1;
+            background-color: #e0f7fa; 
+            color: #333; 
+            flex-direction: column; 
+            justify-content: flex-start; 
+            align-items: center; 
+            padding: 20px 20px 50px 20px; 
+            z-index: 2;
+        }
+        
+        .visible { 
+            opacity: 1 !important; 
+            display: block !important;
+        } 
+        
+        #catMaskState.hidden { 
+            opacity: 0 !important; 
+            pointer-events: none; 
+            position: absolute; 
+        } 
+        
+        #catMaskState-header {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            margin-bottom: 30px;
+        }
+
+        #catMaskState-title h1 { 
+            font-family: 'Chewy', cursive; 
+            font-size: 4.5em; 
+            color: #ff99aa; 
+            margin-bottom: -15px; 
+            text-align: center;
+            text-shadow: 2px 2px 0px #fff;
+            cursor: default; /* Rimuovo il cursore dal vecchio trigger */
+        } 
+
+        #catMaskState-title p {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.2em;
+            color: #66bb6a; 
+            font-weight: bold;
+            text-transform: uppercase;
+            margin: 0;
+            text-align: center;
+        }
+
+        .cat-image-container { 
+            position: relative; 
+            max-width: 600px; 
+            width: 90%; 
+            margin: 30px auto; 
+            text-align: center;
+        } 
+        
+        .cat-hero-image {
+            width: 100%;
+            height: auto;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+            display: block;
+        }
+        
+        /* SECRET SPOT: The invisible area */
+        .secret-spot { 
+            position: absolute; 
+            top: 5px; 
+            right: 5px; 
+            width: 20%; 
+            height: 20%; 
+            cursor: pointer; 
+            z-index: 10; 
+            opacity: 0; 
+        } 
+
+        /* Products on Cat Mask */
+        #maskProducts-container {
+            width: 100%;
+            max-width: 1000px;
+            padding: 20px 0;
+            margin-top: 20px;
+        }
+        
+        #maskProducts-container h2 {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            color: #333; 
+            margin-bottom: 25px;
+            text-align: center;
+            font-size: 2em;
+        }
+
+        .mask-product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+        }
+        
+        .mask-product-card {
+            background-color: #ffffff; 
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+        
+        .mask-product-card img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .mask-product-card h4 {
+            color: #555;
+            font-size: 0.9em;
+        }
+        
+        .mask-product-card p {
+            color: #ff99aa; 
+            font-weight: bold;
+        }
+        
+        .mask-product-button {
+            background-color: #66bb6a; 
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+        }
+
+
+        /* --- SHOP MASK (Neutral/Original Look) --- */ 
+        #shopState {
+            background-color: #f4f4f4; 
+            color: #333;
+            padding: 30px; 
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        #shopState h1 {
+            font-size: 2.5em; 
+            color: #1a1a1a; 
+            text-transform: uppercase;
+        }
+
+        .shop-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 10px 0; 
+            margin-bottom: 30px; 
+            border-bottom: 2px solid #ccc; 
+        } 
+
+        .cart-icon-container { 
+            position: relative;
+            cursor: pointer;
+            padding: 8px 12px;
+            background-color: #e0e0e0; 
+            border-radius: 5px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .cart-icon { 
+            font-size: 1.5em; 
+        } 
+
+        #cart-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #cc0000; 
+            color: white;
+            padding: 2px 6px;
+            border-radius: 50%;
+            font-size: 0.8em;
+            line-height: 1;
+        }
+        
+        .product-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+            gap: 25px; 
+        } 
+
+        .product-card { 
+            background-color: white; 
+            border-radius: 8px; 
+            overflow: hidden; 
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); 
+            border: 1px solid #ddd;
+        } 
+
+        .product-image { 
+            width: 100%; 
+            height: 180px; 
+            object-fit: cover; 
+            display: block; 
+        } 
+        
+        .product-info { 
+            padding: 15px; 
+            text-align: center;
+        } 
+
+        .product-title { 
+            font-size: 1.2em; 
+            margin: 0 0 5px 0; 
+            color: #333;
+        } 
+
+        .product-price { 
+            font-size: 1.5em; 
+            font-weight: bold; 
+            color: #007bff;
+            margin: 0 0 15px 0;
+        } 
+
+        .quantity-select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .add-to-cart-button { 
+            background-color: #007bff; 
+            color: white; 
+            border: none; 
+            padding: 10px 15px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            width: 100%; 
+            font-size: 1em; 
+            transition: background-color 0.2s; 
+        } 
+
+        .add-to-cart-button:hover { 
+            background-color: #0056b3; 
+        } 
+
+        /* MODAL STYLES */
+        #cartModal { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background-color: rgba(0, 0, 0, 0.7); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 1000; 
+        } 
+
+        .modal-content { 
+            background-color: white; 
+            padding: 30px; 
+            border-radius: 10px; 
+            width: 90%; 
+            max-width: 450px; 
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); 
+        } 
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .checkout-button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            background-color: #28a745; 
+            color: white;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .checkout-button:hover {
+            background-color: #1e7e34; 
+        }
+
+        /* --- CHECKOUT/CONFIRMATION STATES --- */
+        #checkoutState, #orderConfirmationState {
+            background-color: #f4f4f4;
+            padding: 30px 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .checkout-container {
+            display: flex;
+            max-width: 1000px;
+            width: 100%;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .checkout-left {
+            flex: 2;
+            padding: 30px;
+            background-color: #f8f9fa;
+        }
+
+        .checkout-right {
+            flex: 1;
+            background-image: url('https://images.unsplash.com/photo-1518458004457-3f338d350997?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'); 
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .product-summary-box {
+            padding: 20px;
+            border: 1px solid #ddd;
+            background-color: white;
+            border-radius: 5px;
+        }
+        
+        .summary-item-image {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .checkout-item-details {
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+            margin-top: 10px;
+            line-height: 1.6;
+        }
+
+        .submit-order-button, .finish-button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            background-color: #28a745; 
+            color: white;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        
+        .submit-order-button:last-of-type { 
+            background-color: #ccc;
+            color: #333;
+        }
+        
+        .solana-display {
+            background-color: #f0f0f0; 
+            color: #333; 
+            border: 1px solid #ccc;
+            padding: 15px;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            border-radius: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .checkout-container {
+                flex-direction: column;
+                margin: 0 10px;
+            }
+            .checkout-right {
+                height: 200px; 
+            }
+            #catMaskState-title h1 {
+                font-size: 3em;
+            }
+            .shop-header h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style> 
+</head> 
+<body> 
+    
+    <div class="mask-state" id="catMaskState"> 
+        <div id="catMaskState-header">
+            <div id="catMaskState-title">
+                <h1>MEOW HELLO</h1> 
+                <p>The Purrfect Place for Cats & Humans</p>
+            </div>
+        </div>
+
+        <div class="cat-image-container"> 
+            <img src="https://images.unsplash.com/photo-1543852786-1cf6624b9987?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Cute Cat Looking" class="cat-hero-image"> 
+            <div class="secret-spot" id="secretSpot" title="Secret Area"></div> 
+        </div> 
+
+        <div id="maskProducts-container">
+            <h2>KITTY TREASURES</h2>
+            <div class="mask-product-grid">
+                
+                <div class="mask-product-card">
+                    <img src="https://images.unsplash.com/photo-1574768393510-4e3a4e9b9772?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Cat Bed">
+                    <h4>Cloud Bed</h4>
+                    <p>£15.00</p>
+                    <button class="mask-product-button" onclick="tryToEnterShop()">Buy Now</button>
+                </div>
+                <div class="mask-product-card">
+                    <img src="https://images.unsplash.com/photo-1574928784402-d961678f8c92?q=80&w=1935&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Scratching Post">
+                    <h4>Climbing Tower</h4>
+                    <p>£45.00</p>
+                    <button class="mask-product-button" onclick="tryToEnterShop()">Buy Now</button>
+                </div>
+                <div class="mask-product-card">
+                    <img src="https://images.unsplash.com/photo-1582845000574-d4b8e23971c0?q=80&w=1964&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Food Bowl">
+                    <h4>Smart Food Bowl</h4>
+                    <p>£22.50</p>
+                    <button class="mask-product-button" onclick="tryToEnterShop()">Buy Now</button>
+                </div>
+                <div class="mask-product-card">
+                    <img src="https://images.unsplash.com/photo-1584992982855-b44c2049e29f?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Dry Food">
+                    <h4>Salmon Kibble Bag</h4>
+                    <p>£18.00</p>
+                    <button class="mask-product-button" onclick="tryToEnterShop()">Buy Now</button>
+                </div>
+                <div class="mask-product-card">
+                    <img src="https://images.unsplash.com/photo-1560938479-51a7741d7d07?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Cat Treats">
+                    <h4>Protein Treats</h4>
+                    <p>£10.50</p>
+                    <button class="mask-product-button" onclick="tryToEnterShop()">Buy Now</button>
+                </div>
+                <div class="mask-product-card">
+                    <img src="https://images.unsplash.com/photo-1588147743936-e71781297d26?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Carrier">
+                    <h4>Travel Carrier</h4>
+                    <p>£60.00</p>
+                    <button class="mask-product-button" onclick="tryToEnterShop()">Buy Now</button>
+                </div>
+                <div class="mask-product-card">
+                    <img src="https://images.unsplash.com/photo-1549429188-46607d73ac6a?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Luxury House">
+                    <h4>Cat House</h4>
+                    <p>£75.00</p>
+                    <button class="mask-product-button" onclick="tryToEnterShop()">Buy Now</button>
+                </div>
+                <div class="mask-product-card">
+                    <img src="https://images.unsplash.com/photo-1594917631380-4965251a37c4?q=80&w=1935&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Brush">
+                    <h4>De-Shedding Brush</h4>
+                    <p>£25.00</p>
+                    <button class="mask-product-button" onclick="tryToEnterShop()">Buy Now</button>
+                </div>
+                <div class="mask-product-card">
+                    <img src="https://images.unsplash.com/photo-1574768393510-4e3a4e9b9772?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Litter">
+                    <h4>Premium Litter Sand</h4>
+                    <p>£99.00</p>
+                    <button class="mask-product-button" onclick="tryToEnterShop()">Buy Now</button>
+                </div>
+                <div class="mask-product-card">
+                    <img src="https://images.unsplash.com/photo-1628189873499-5567b43a9b3a?q=80&w=1964&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Clothes">
+                    <h4>Winter Coat</h4>
+                    <p>£30.00</p>
+                    <button class="mask-product-button" onclick="tryToEnterShop()">Buy Now</button>
+                </div>
+            </div>
+        </div>
+    </div> 
+    
+    <div class="shop-state" id="shopState"> 
+        <div class="shop-header"> 
+            <h1>DIRECT NOTES PURCHASE</h1> 
+            <div class="cart-icon-container" onclick="toggleCart()">
+                <div class="cart-icon">🛒</div>
+                <span id="cart-count">0</span>
+            </div> 
+        </div> 
+        
+        <div class="product-grid"> 
+            <div class="product-card" data-id="1" data-name="NOTESLAB £100 LNotes" data-price="35.0" data-img="https://images.unsplash.com/photo-1628155990264-98444a835a60?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"> 
+                <img src="https://images.unsplash.com/photo-1628155990264-98444a835a60?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="£100 Note Stack" class="product-image"> 
+                <div class="product-info"> 
+                    <h2 class="product-title">NOTESLAB £100 LNotes</h2> 
+                    <p class="product-price">£35.0</p> 
+                    <select class="quantity-select" id="qty-1"> 
+                        <option value="1">1</option> 
+                        <option value="2">2</option> 
+                        <option value="3">3</option> 
+                        <option value="4">4</option> 
+                    </select> 
+                    <button class="add-to-cart-button" onclick="addToCart(1)">Add to Cart</button> 
+                </div> 
+            </div> 
+
+            <div class="product-card" data-id="2" data-name="NOTESLAB £200 LNotes" data-price="83.0" data-img="https://images.unsplash.com/photo-1590393040333-68d7168b422a?q=80&w=1964&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"> 
+                <img src="https://images.unsplash.com/photo-1590393040333-68d7168b422a?q=80&w=1964&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="£200 Note Stack" class="product-image"> 
+                <div class="product-info"> 
+                    <h2 class="product-title">NOTESLAB £200 LNotes</h2> 
+                    <p class="product-price">£83.0</p> 
+                    <select class="quantity-select" id="qty-2"> 
+                        <option value="1">1</option> 
+                        <option value="2">2</option> 
+                        <option value="3">3</option> 
+                        <option value="4">4</option> 
+                    </select> 
+                    <button class="add-to-cart-button" onclick="addToCart(2)">Add to Cart</button> 
+                </div> 
+            </div> 
+
+            <div class="product-card" data-id="3" data-name="NOTESLAB £300 LNotes" data-price="119.0" data-img="https://images.unsplash.com/photo-1582213782176-c57a79e43a9f?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"> 
+                <img src="https://images.unsplash.com/photo-1582213782176-c57a79e43a9f?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="£300 Note Stack" class="product-image"> 
+                <div class="product-info"> 
+                    <h2 class="product-title">NOTESLAB £300 LNotes</h2> 
+                    <p class="product-price">£119.0</p> 
+                    <select class="quantity-select" id="qty-3"> 
+                        <option value="1">1</option> 
+                        <option value="2">2</option> 
+                        <option value="3">3</option> 
+                        <option value="4">4</option> 
+                    </select> 
+                    <button class="add-to-cart-button" onclick="addToCart(3)">Add to Cart</button> 
+                </div> 
+            </div> 
+
+            <div class="product-card" data-id="4" data-name="NOTESLAB £500 LNotes" data-price="192.0" data-img="https://images.unsplash.com/photo-1598425256247-498115682669?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"> 
+                <img src="https://images.unsplash.com/photo-1598425256247-498115682669?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="£500 Note Stack" class="product-image"> 
+                <div class="product-info"> 
+                    <h2 class="product-title">NOTESLAB £500 LNotes</h2> 
+                    <p class="product-price">£192.0</p> 
+                    <select class="quantity-select" id="qty-4"> 
+                        <option value="1">1</option> 
+                        <option value="2">2</option> 
+                        <option value="3">3</option> 
+                        <option value="4">4</option> 
+                    </select> 
+                    <button class="add-to-cart-button" onclick="addToCart(4)">Add to Cart</button> 
+                </div> 
+            </div> 
+        </div> 
+    </div> 
+    
+    <div id="checkoutState">
+        <div class="checkout-container">
+            <div class="checkout-left">
+                <div class="product-summary-box">
+                    <h2>Order Summary</h2>
+                    <div id="checkout-summary-content">
+                        </div>
+                </div>
+            </div>
+            
+            <div class="checkout-right">
+                </div>
+        </div>
+    </div>
+
+    <div id="orderConfirmationState">
+        <div class="checkout-container">
+            <div class="checkout-left">
+                <div class="product-summary-box" style="padding: 30px;">
+                    <h2 style="color: #28a745;">Order Confirmation</h2>
+                    
+                    <div id="order-details-content">
+                        </div>
+
+                    <p style="margin-top: 25px; font-weight: bold; color: #333; border-top: 1px solid #eee; padding-top: 15px;">
+                        Send your order number to @e_eeppa.
+                    </p>
+
+                    <button class="finish-button" onclick="finalizeOrder()">Back to Shop</button>
+                </div>
+            </div>
+            
+            <div class="checkout-right">
+            </div>
+        </div>
+    </div>
+
+    <div id="cartModal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-button" onclick="toggleCart()" style="float: right; font-size: 2em; line-height: 0.8; cursor: pointer;">&times;</span>
+            <h2>Your Cart</h2>
+            <div id="cart-items-container">
+                </div>
+            <p style="text-align: right; font-weight: bold; margin-top: 15px;">Total: £<span id="cart-total">0.00</span></p>
+            <button class="checkout-button" onclick="checkout()">Proceed to Checkout</button>
+        </div>
+    </div>
+    
+    <script> 
+        const secretSpot = document.getElementById('secretSpot'); 
+        const catMaskState = document.getElementById('catMaskState'); 
+        const shopState = document.getElementById('shopState'); 
+        const checkoutState = document.getElementById('checkoutState'); 
+        const orderConfirmationState = document.getElementById('orderConfirmationState'); 
+        const cartModal = document.getElementById('cartModal');
+        const cartCount = document.getElementById('cart-count');
+        const cartItemsContainer = document.getElementById('cart-items-container');
+        const cartTotalDisplay = document.getElementById('cart-total');
+        const checkoutSummaryContent = document.getElementById('checkout-summary-content');
+        const orderDetailsContent = document.getElementById('order-details-content'); 
+
+        let cart = [];
+        let secretAreaActive = true; 
+        const GLOBAL_STATUS_URL = '/shop_status.json'; // URL da implementare sul tuo server
+        const OWNER_SHUTDOWN_KEY = 'YOUR_SECRET_CLOSURE_KEY_12345'; // CHIAVE CHE SOLO TU DEVI CONOSCERE
+
+        // --- FUNZIONI DI BASE (OMESSE PER BREVITÀ) ---
+        // (convertToSolana, generateOrderNumber, getProductInfo - rimangono le stesse)
+        const SOLANA_RATE_PER_GBP = 0.015; 
+        function convertToSolana(gbpAmount) { return (gbpAmount * SOLANA_RATE_PER_GBP).toFixed(6); }
+        function generateOrderNumber() { return 'ORD-' + Math.floor(Math.random() * 90000000 + 10000000); }
+        function getProductInfo(id) {
+            const card = document.querySelector(`.product-card[data-id="${id}"]`);
+            if (!card) return null; 
+            return {
+                name: card.getAttribute('data-name'),
+                price: parseFloat(card.getAttribute('data-price')),
+                img: card.getAttribute('data-img')
+            };
+        }
+        
+        // --- LOGICA DI CONTROLLO GLOBALE ---
+
+        // Funzione per verificare lo stato globale del negozio
+        async function checkGlobalStatus() {
+            if (!secretAreaActive) return; // Se disattivato localmente, non fare nulla
+
+            try {
+                // Simulo il controllo di un file/endpoint sul server
+                const response = await fetch(GLOBAL_STATUS_URL + '?' + new Date().getTime(), { cache: 'no-store' });
+                const data = await response.json();
+                
+                if (data.status === 'closed') {
+                    executeGlobalShutdown();
+                } else {
+                     // Assicura che sia attivo (in caso fosse stato chiuso per errore)
+                    secretAreaActive = true; 
+                    // Assicura che la maschera sia visibile solo se non si è nello shop
+                    if(shopState.classList.contains('visible') || checkoutState.classList.contains('visible') || orderConfirmationState.classList.contains('visible')) {
+                        // Siamo nel negozio segreto, lasciamo l'utente.
+                    } else {
+                        showCatMask(); // Assicura che la maschera sia quella di default
+                    }
+                }
+            } catch (error) {
+                // Ignora errori di rete o file mancante. Presupponiamo che sia aperto.
+                console.error("Could not fetch global status.", error);
+            }
+        }
+        
+        // Funzione per eseguire la chiusura immediata e forzata
+        function executeGlobalShutdown() {
+            if (!secretAreaActive) return;
+            
+            secretAreaActive = false;
+            
+            // 1. RIMUOVE IL PUNTO DI ACCESSO
+            if (secretSpot) {
+                secretSpot.removeEventListener('click', showShop); 
+                secretSpot.style.display = 'none';
+            }
+            
+            // 2. FORZA IL RITORNO ALLA MASCHERA (per chiunque sia nel negozio segreto)
+            if (shopState.classList.contains('visible') || checkoutState.classList.contains('visible') || orderConfirmationState.classList.contains('visible')) {
+                showCatMask(); // Passa allo stato iniziale della Cat Mask
+                alert("The secure notes access has been suspended globally.");
+            }
+            
+            // 3. Blocca l'accesso futuro dai pulsanti "Buy Now"
+            window.tryToEnterShop = function() {
+                alert("The Kitty Shop is temporarily out of stock. Secure notes purchase has been suspended globally.");
+            }
+        }
+        
+        // Funzione per tornare in modo pulito alla Cat Mask (Stato Default)
+        function showCatMask() {
+            // Nasconde tutti gli stati dello Shop
+            shopState.classList.remove('visible');
+            shopState.style.display = 'none';
+            checkoutState.classList.remove('visible');
+            checkoutState.style.display = 'none';
+            orderConfirmationState.classList.remove('visible');
+            orderConfirmationState.style.display = 'none';
+            
+            // Mostra la Cat Mask
+            catMaskState.style.display = 'flex';
+            catMaskState.classList.remove('hidden'); 
+            catMaskState.classList.add('visible'); 
+            document.title = 'MEOW HELLO - The Purrfect Place';
+
+            window.scrollTo(0, 0); 
+        }
+
+        // --- INIZIALIZZAZIONE E LOOP ---
+        
+        // 1. Controlla lo stato globale immediatamente all'avvio
+        checkGlobalStatus();
+        
+        // 2. Ripeti il controllo ogni 5 secondi per forzare l'uscita in real-time
+        setInterval(checkGlobalStatus, 5000); 
+
+        // 3. Se l'area segreta è attiva, abilita il listener (altrimenti, executeGlobalShutdown lo ha rimosso)
+        if (secretAreaActive) {
+            secretSpot.addEventListener('click', showShop); 
+        }
+
+        // 4. Controlla la chiave di chiusura del proprietario all'avvio (solo per il proprietario)
+        window.addEventListener('load', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const shutdownKey = urlParams.get('global_shutdown_key');
+            
+            if (shutdownKey === OWNER_SHUTDOWN_KEY) {
+                // QUI DEVI INVIARE IL SEGNALE AL TUO SERVER PER CAMBIARE status.json a {"status": "closed"}
+                alert(`OWNER TRIGGER: La chiave segreta è stata rilevata. Ora devi inviare una richiesta al tuo server (API) per chiudere globalmente il file di stato. Una volta fatto, tutti gli utenti verranno reindirizzati entro 5 secondi.`);
+                // Esempio fittizio: fetch('/api/set_status?status=closed&key=' + OWNER_SHUTDOWN_KEY);
+            }
+        });
+
+
+        // --- FUNZIONI DI TRANSIZIONE ---
+
+        // CRITICAL TRANSITION FUNCTION: From Cat Mask to Neutral Shop
+        function showShop() {
+            if (!secretAreaActive) return; // Blocco di sicurezza
+            
+            // Nasconde la Cat Mask
+            catMaskState.classList.add('hidden'); 
+            
+            // Mostra lo Shop Neutro
+            shopState.style.display = 'block';
+            shopState.classList.add('visible');
+            document.title = 'DIRECT NOTES PURCHASE';
+            
+            setTimeout(() => {
+                catMaskState.style.display = 'none';
+                window.scrollTo(0, 0); 
+            }, 550); 
+        }
+
+        // PROTECTION FUNCTION: Silent Loop on non-secret clicks on the mask
+        function tryToEnterShop() {
+            if (!secretAreaActive) {
+                // Se disattivato, mostra un messaggio di decoy
+                alert("The Kitty Shop is temporarily out of stock.");
+                return;
+            }
+            
+            if (cart.length === 0) {
+                window.location.reload(); 
+            } else {
+                toggleCart();
+            }
+        }
+        
+        // --- FUNZIONI CARRELLO/CHECKOUT (OMESSE PER BREVITÀ) ---
+        // (addToCart, updateCartCount, renderCart, toggleCart, checkout, submitOrder, finalizeOrder - rimangono le stesse)
+        
+        // ... Il resto delle funzioni (addToCart, renderCart, checkout, ecc.) non sono cambiate.
+
+        function addToCart(productID) {
+            const info = getProductInfo(productID);
+            if (!info) return;
+
+            const quantitySelect = document.getElementById(`qty-${productID}`);
+            const quantity = parseInt(quantitySelect.value, 10);
+
+            const existingItem = cart.find(item => item.id === productID);
+
+            if (existingItem) {
+                existingItem.quantity += quantity;
+            } else {
+                cart.push({ 
+                    id: productID, 
+                    name: info.name, 
+                    price: info.price, 
+                    img: info.img, 
+                    quantity: quantity 
+                });
+            }
+
+            updateCartCount();
+            alert(`${quantity} x ${info.name} added to cart!`);
+        }
+        
+        function updateCartCount() {
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartCount.textContent = totalItems;
+            cartCount.style.display = totalItems > 0 ? 'inline-block' : 'none';
+        }
+
+        function renderCart() {
+            cartItemsContainer.innerHTML = '';
+            let total = 0;
+
+            if (cart.length === 0) {
+                cartItemsContainer.innerHTML = '<p>Your cart is empty.</p>';
+                document.querySelector('.checkout-button').disabled = true;
+            } else {
+                document.querySelector('.checkout-button').disabled = false;
+                cart.forEach(item => {
+                    const itemTotal = item.price * item.quantity;
+                    total += itemTotal;
+
+                    const itemElement = document.createElement('div');
+                    itemElement.classList.add('cart-item');
+                    itemElement.innerHTML = `
+                        <span>${item.name} (${item.quantity}x)</span>
+                        <span style="font-weight: bold;">£${itemTotal.toFixed(2)}</span>
+                    `;
+                    cartItemsContainer.appendChild(itemElement);
+                });
+            }
+
+            cartTotalDisplay.textContent = total.toFixed(2);
+        }
+
+        function toggleCart() {
+            if (cartModal.style.display === 'flex') { 
+                cartModal.style.display = 'none';
+            } else {
+                renderCart();
+                cartModal.style.display = 'flex';
+            }
+        }
+
+        window.onclick = function(event) {
+            if (event.target == cartModal) {
+                cartModal.style.display = 'none';
+            }
+        }
+
+        function renderCheckoutSummary() {
+            checkoutSummaryContent.innerHTML = '';
+
+            const mainItem = cart[0]; 
+            let total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            if (!mainItem) {
+                checkoutSummaryContent.innerHTML = `<p>No items in cart.</p>`;
+                return;
+            }
+
+            let summaryHTML = `
+                <img src="${mainItem.img}" alt="${mainItem.name}" class="summary-item-image">
+                <h3 style="margin: 0;">${mainItem.name}</h3>
+                <p style="margin-top: 5px; color: #555;">(and ${cart.length - 1} more item(s))</p>
+                
+                <div class="checkout-item-details">
+                    <div>
+                        <span>Cart Total:</span> 
+                        <span style="font-weight: bold; color: #1a1a1a;">£${total.toFixed(2)}</span>
+                    </div>
+                </div>
+                
+                <form onsubmit="event.preventDefault(); submitOrder();">
+                    <h4 style="margin-top: 25px; color: #333;">Contact Details</h4>
+                    <input type="text" id="telegram" placeholder="Telegram @" required style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 5px; box-sizing: border-box;">
+                    <input type="email" id="email" placeholder="Email" required style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 5px; box-sizing: border-box;">
+                    
+                    <button type="submit" class="submit-order-button">Pay Now £${total.toFixed(2)}</button>
+                    <button type="button" onclick="showShop()" class="submit-order-button">Go Back</button>
+                </form>
+            `;
+
+            checkoutSummaryContent.innerHTML = summaryHTML;
+        }
+
+        function checkout() {
+             if (cart.length === 0) {
+                alert("Cart is empty. Please add products before ordering!");
+                return;
+            }
+            
+            toggleCart(); 
+            shopState.classList.remove('visible');
+            shopState.style.display = 'none';
+            orderConfirmationState.classList.remove('visible');
+            orderConfirmationState.style.display = 'none';
+            
+            renderCheckoutSummary(); 
+            
+            checkoutState.style.display = 'block'; 
+            checkoutState.classList.add('visible');
+            window.scrollTo(0, 0); 
+        }
+        
+        function renderOrderConfirmation(orderNumber) {
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const solanaAmount = convertToSolana(total);
+
+            const email = currentEmail;
+            const telegram = currentTelegram;
+
+            orderDetailsContent.innerHTML = `
+                <div style="text-align: left; line-height: 1.8;">
+                    <p style="font-size: 1.4em; font-weight: bold; color: #007bff; margin-bottom: 20px;">
+                        Order Number: <span id="order-number-display">${orderNumber}</span>
+                    </p>
+
+                    <div class="checkout-item-details" style="padding-bottom: 10px;">
+                        <h4 style="margin: 0 0 10px 0;">Your Details:</h4>
+                        <div><span>Telegram:</span> <span style="font-weight: bold;">${telegram}</span></div>
+                        <div><span>Email:</span> <span>${email}</span></div>
+                    </div>
+                    
+                    <h4 style="margin-top: 25px;">Total:</h4>
+                    
+                    <div class="checkout-item-details">
+                        <div>
+                            <span>Final Total:</span> 
+                            <span style="font-weight: bold; color: #28a745;">£${total.toFixed(2)}</span>
+                        </div>
+                    </div>
+                    
+                    <h4 style="margin-top: 25px;">Crypto Payment (SOLANA):</h4>
+                    <div class="solana-display">
+                        SOLANA Amount: <span>${solanaAmount} SOL</span>
+                    </div>
+
+                    <p style="margin-top: 20px; font-size: 0.9em; color: #777;">
+                        *Please send the exact amount of ${solanaAmount} SOL.
+                    </p>
+                </div>
+            `;
+        }
+
+        function submitOrder() {
+             const telegramInput = document.getElementById('telegram').value.trim();
+            const emailInput = document.getElementById('email').value.trim();
+            
+            if (!telegramInput || !emailInput) {
+                alert("Please fill in all fields.");
+                return;
+            }
+
+            currentEmail = emailInput;
+            currentTelegram = telegramInput;
+
+            currentOrderNumber = generateOrderNumber();
+            
+            checkoutState.classList.remove('visible');
+            checkoutState.style.display = 'none';
+            
+            renderOrderConfirmation(currentOrderNumber);
+            orderConfirmationState.style.display = 'block';
+            orderConfirmationState.classList.add('visible');
+            window.scrollTo(0, 0); 
+        }
+
+        function finalizeOrder() {
+            cart = []; 
+            updateCartCount();
+            showShop(); // Torna allo shop neutro (o alla Cat Mask se è chiuso)
+        }
+    </script> 
+    
+</body> 
+</html>
