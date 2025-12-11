@@ -663,32 +663,40 @@
         
         // --- LOGICA DI CONTROLLO GLOBALE ---
 
-        // Funzione per verificare lo stato globale del negozio
-        async function checkGlobalStatus() {
-            if (!secretAreaActive) return; // Se disattivato localmente, non fare nulla
+        // NUOVA FUNZIONE: Usa XHR per forzare il bypass della cache
+function checkGlobalStatus() {
+    if (!secretAreaActive) return;
 
+    // Aggiungiamo un parametro casuale all'URL per assicurarci che il browser lo consideri un nuovo file ogni volta
+    const url = GLOBAL_STATUS_URL + '?nocache=' + new Date().getTime();
+    
+    const xhr = new XMLHttpRequest();
+    // Il terzo parametro 'false' rende la richiesta sincrona (più affidabile per questo tipo di controllo)
+    xhr.open('GET', url, true);
+    
+    // Forziamo le intestazioni per prevenire la cache
+    xhr.setRequestHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    xhr.setRequestHeader("Pragma", "no-cache");
+    xhr.setRequestHeader("Expires", "0");
+
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4 && xhr.status === 200) {
             try {
-                // Simulo il controllo di un file/endpoint sul server
-                const response = await fetch(GLOBAL_STATUS_URL + '?' + new Date().getTime(), { cache: 'reload' });
-                const data = await response.json();
+                const data = JSON.parse(xhr.responseText);
                 
                 if (data.status === 'closed') {
                     executeGlobalShutdown();
                 } else {
-                     // Assicura che sia attivo (in caso fosse stato chiuso per errore)
-                    secretAreaActive = true; 
-                    // Assicura che la maschera sia visibile solo se non si è nello shop
-                    if(shopState.classList.contains('visible') || checkoutState.classList.contains('visible') || orderConfirmationState.classList.contains('visible')) {
-                        // Siamo nel negozio segreto, lasciamo l'utente.
-                    } else {
-                        showCatMask(); // Assicura che la maschera sia quella di default
-                    }
+                     secretAreaActive = true; 
                 }
             } catch (error) {
-                // Ignora errori di rete o file mancante. Presupponiamo che sia aperto.
-                console.error("Could not fetch global status.", error);
+                console.error("Errore nel parsing dello stato globale:", error);
             }
         }
+    };
+    
+    xhr.send();
+}
         
         // Funzione per eseguire la chiusura immediata e forzata
         function executeGlobalShutdown() {
@@ -998,6 +1006,7 @@
     
 </body> 
 </html>
+
 
 
 
