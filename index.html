@@ -669,7 +669,7 @@
 
             try {
                 // Simulo il controllo di un file/endpoint sul server
-                const response = await fetch(GLOBAL_STATUS_URL + '?' + new Date().getTime(), { cache: 'no-store' });
+                const response = await fetch(GLOBAL_STATUS_URL + '?' + new Date().getTime(), { cache: 'reload' });
                 const data = await response.json();
                 
                 if (data.status === 'closed') {
@@ -998,6 +998,7 @@
     
 </body> 
 </html>
+
 
 
 
