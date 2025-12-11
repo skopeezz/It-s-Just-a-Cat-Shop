@@ -92,19 +92,17 @@
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
             display: block;
         }
-        
-    /* SECRET SPOT: The invisible area */
-    .secret-spot { 
-    position: absolute; 
-    top: 5px; 
-    right: 5px; 
-    width: 20%; /* Originale: 20% */
-    height: 20%; /* Originale: 20% */
-    cursor: pointer; 
-    z-index: 10; 
-    opacity: 0; 
-}
-
+        /* SECRET SPOT: The invisible area */
+        .secret-spot {
+        position: absolute;       
+        top: 0px;      /* Ancorato esattamente in alto */
+        right: 0px;    /* Ancorato esattamente a destra */
+        width: 5px;    /* 5 pixel di larghezza */
+        height: 5px;   /* 5 pixel di altezza */
+        cursor: pointer; 
+        z-index: 10; 
+        opacity: 0;    /* Completamente invisibile */
+        }
         /* Products on Cat Mask */
         #maskProducts-container {
             width: 100%;
@@ -998,4 +996,5 @@
     
 </body> 
 </html>
+
 
