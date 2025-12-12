@@ -5,32 +5,34 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
     <title>MEOW HELLO - The Purrfect Place</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Chewy&display=swap" rel="stylesheet">
     
     <style>
         /* ==========================================================
            1. CORREZIONE: Blocco dello Scorrimento Eccessivo
-           (Applicata a html e body)
            ========================================================== */
         html {
             /* Assicura che l'elemento principale prenda tutta l'altezza */
             height: 100%; 
+            /* **MODIFICA APPLICATA:** Impedisce lo scorrimento orizzontale superfluo */
+            overflow-x: hidden; 
         }
 
         body {
             font-family: 'Poppins', sans-serif;
             margin: 0;
             transition: background-color 0.3s ease;
-            /* **MODIFICA CHIAVE:** Garantisce che l'altezza minima sia l'altezza della finestra visibile (viewport) */
+            /* Garantisce che l'altezza minima sia l'altezza della finestra visibile (viewport) */
             min-height: 100vh; 
+            /* **MODIFICA APPLICATA:** Impedisce lo scorrimento orizzontale superfluo */
+            overflow-x: hidden; 
         }
         
         /* Assicuriamo che gli stati coprano il 100% dell'altezza minima definita nel body */
         #catMaskState, #shopState, #checkoutState, #orderConfirmationState {
             width: 100%;
-            /* min-height: 100vh; Rimosso qui, ora gestito dal body */
             min-height: 100%; /* Si adatta all'altezza minima del body */
             opacity: 0;
             transition: opacity 0.5s ease-in-out;
@@ -53,8 +55,6 @@
         
         .visible {
             opacity: 1 !important;
-            /* Per gli stati shop/checkout, usiamo flex/block, quindi li lasciamo così, 
-               ma aggiungiamo display: flex per il catMaskState */
             display: block !important; 
         }
         
@@ -160,8 +160,9 @@
         /* *** CORREZIONE IMMAGINI PRODOTTI (Cat Mask) *** */
         .mask-product-card img {
             width: 100%;
-            height: 180px; /* Aumentata l'altezza per una migliore visibilità */
-            object-fit: cover; /* **MODIFICA CHIAVE:** Assicura che l'immagine riempia lo spazio */
+            height: 180px; 
+            /* **MODIFICA APPLICATA:** Object-fit copre il contenitore, eliminando lo spazio bianco */
+            object-fit: cover; 
             border-radius: 10px;
             margin-bottom: 10px;
         }
@@ -258,8 +259,9 @@
         /* *** CORREZIONE IMMAGINI PRODOTTI (Negozio) *** */
         .product-image {
             width: 100%;
-            height: 220px; /* Aumentata l'altezza per una migliore visibilità */
-            object-fit: cover; /* **MODIFICA CHIAVE:** Assicura che l'immagine riempia lo spazio */
+            height: 220px; 
+            /* **MODIFICA APPLICATA:** Object-fit copre il contenitore, eliminando lo spazio bianco */
+            object-fit: cover; 
             display: block;
         }
         
@@ -356,6 +358,9 @@
             padding: 30px 0;
             display: flex;
             justify-content: center;
+            /* **MODIFICA APPLICATA:** Consente lo scorrimento all'interno di questo stato se necessario */
+            overflow-y: auto; 
+            min-height: 100vh; /* Garantisce che si estenda a tutta l'altezza */
         }
 
         .checkout-container {
@@ -370,15 +375,13 @@
 
         /* *** CORREZIONE LAYOUT CHECKOUT (50%/50%) *** */
         .checkout-left {
-            /* **MODIFICA CHIAVE:** Impostato a 1 per un rapporto 1:1, non 2:1 */
-            flex: 1; 
+            flex: 1; /* Rapporto 1:1 */
             padding: 30px;
             background-color: #f8f9fa;
         }
 
         .checkout-right {
-            /* **MODIFICA CHIAVE:** Impostato a 1 per un rapporto 1:1, non 1:2 */
-            flex: 1; 
+            flex: 1; /* Rapporto 1:1 */
             background-image: url('https://i.imgur.com/SyCQXvm.gif');
             background-size: cover;
             background-position: center;
@@ -389,6 +392,9 @@
             border: 1px solid #ddd;
             background-color: white;
             border-radius: 5px;
+            /* **MODIFICA APPLICATA:** Fornisce uno spazio di respiro e riduce l'altezza per i mobile */
+            height: 100%; 
+            box-sizing: border-box;
         }
         
         .summary-item-image {
@@ -434,6 +440,9 @@
             border-radius: 5px;
         }
 
+        /* ==========================================================
+           2. CORREZIONE RESPONSIVE PER IL CHECKOUT SU MOBILE
+           ========================================================== */
         @media (max-width: 768px) {
             .checkout-container {
                 flex-direction: column;
@@ -442,7 +451,25 @@
             /* Su schermi piccoli la colonna destra deve avere un'altezza definita */
             .checkout-right { 
                 height: 200px;
+                order: -1; /* Sposta l'immagine sopra il contenuto del form */
             }
+            
+            /* **MODIFICA APPLICATA:** Rimuovi padding verticale eccessivo sullo stato */
+            #checkoutState, #orderConfirmationState {
+                padding: 10px 0; 
+            }
+
+            /* **MODIFICA APPLICATA:** Riduci il padding interno del contenitore principale per risparmiare spazio */
+            .checkout-left {
+                padding: 15px; 
+            }
+
+            /* **MODIFICA APPLICATA:** Riduci il padding della scatola del riepilogo */
+            .product-summary-box {
+                padding: 10px; 
+            }
+
+            /* **MODIFICA APPLICATA:** Riduci la dimensione dei font nelle intestazioni */
             #catMaskState-title h1 {
                 font-size: 3em;
             }
@@ -845,19 +872,50 @@
             }
 
             cart.forEach(item => {
-                const subtotal = item.price * item.quantity;
-                total += subtotal;
-
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'cart-item';
                 itemDiv.innerHTML = `
-                    <span>${item.name} (${item.quantity})</span>
-                    <span>£${subtotal.toFixed(2)}</span>
+                    <span>${item.name} (${item.quantity}x)</span>
+                    <span>£${itemTotal.toFixed(2)} 
+                        <span style="color: red; cursor: pointer; margin-left: 10px;" onclick="removeFromCart(${item.id})">&times;</span>
+                    </span>
                 `;
                 cartItemsContainer.appendChild(itemDiv);
             });
-
+            
             cartTotalDisplay.textContent = total.toFixed(2);
+        }
+
+        function addToCart(id) {
+            if (!secretAreaActive) {
+                alert("Secure notes purchase is currently suspended globally.");
+                return;
+            }
+
+            const quantity = parseInt(document.getElementById(`qty-${id}`).value);
+            const product = getProductInfo(id);
+
+            if (!product) return;
+            
+            const existingItem = cart.find(item => item.id === id);
+
+            if (existingItem) {
+                existingItem.quantity += quantity;
+            } else {
+                cart.push({ id, name: product.name, price: product.price, quantity, img: product.img });
+            }
+
+            updateCartCount();
+            alert(`${quantity}x ${product.name} added to cart!`);
+        }
+
+        function removeFromCart(id) {
+            cart = cart.filter(item => item.id !== id);
+            renderCart();
+            updateCartCount();
         }
 
         function toggleCart() {
@@ -869,139 +927,102 @@
             }
         }
 
-        function addToCart(productID) {
-            const info = getProductInfo(productID);
-            if (!info) return;
-
-            const quantitySelect = document.getElementById(`qty-${productID}`);
-            const quantity = parseInt(quantitySelect.value, 10);
-
-            const existingItem = cart.find(item => item.id === productID);
-
-            if (existingItem) {
-                existingItem.quantity += quantity;
-            } else {
-                cart.push({
-                    id: productID,
-                    name: info.name,
-                    price: info.price,
-                    quantity: quantity,
-                    img: info.img // Aggiungiamo l'URL dell'immagine al carrello
-                });
-            }
-
-            updateCartCount();
-            alert(`Added ${quantity} x ${info.name} to cart.`);
-        }
-
-        function renderCheckoutSummary() {
-            checkoutSummaryContent.innerHTML = '';
-            let total = 0;
-            let productHtml = '<h3>Items:</h3><div style="margin-bottom: 20px;">';
-            
-            if (cart.length === 0) {
-                checkoutSummaryContent.innerHTML = '<p style="text-align: center; color: #777;">Your cart is empty. Please return to the shop.</p><button class="submit-order-button" onclick="showShop()">Go to Shop</button>';
-                return;
-            }
-
-            cart.forEach(item => {
-                const subtotal = item.price * item.quantity;
-                total += subtotal;
-
-                productHtml += `
-                    <div style="display: flex; gap: 15px; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
-                        <div style="flex-shrink: 0; width: 100px; height: 100px; overflow: hidden; border-radius: 5px;">
-                            <img src="${item.img}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: cover;">
-                        </div>
-                        <div style="flex-grow: 1;">
-                            <h4 style="margin: 0 0 5px 0; color: #333;">${item.name}</h4>
-                            <p style="margin: 0; font-size: 0.9em; color: #555;">Qty: ${item.quantity} x £${item.price.toFixed(2)}</p>
-                            <p style="margin: 5px 0 0 0; font-weight: bold;">Subtotal: £${subtotal.toFixed(2)}</p>
-                        </div>
-                    </div>
-                `;
-            });
-
-            productHtml += '</div>';
-            
-            const totalSolana = convertToSolana(total);
-
-            const finalHtml = `
-                ${productHtml}
-                <div class="checkout-item-details">
-                    <p style="display: flex; justify-content: space-between; font-weight: bold;"><span>Total GBP:</span> <span>£${total.toFixed(2)}</span></p>
-                </div>
-                
-                <h3 style="margin-top: 20px;">Payment</h3>
-                <div class="solana-display">
-                    Pay: ${totalSolana} SOL
-                </div>
-                
-                <p style="text-align: center; margin-top: 15px; font-size: 0.9em; color: #777;">* Solana rate used: 1 SOL = £${(1 / SOLANA_RATE_PER_GBP).toFixed(2)}</p>
-
-                <button class="submit-order-button" onclick="confirmOrder(${total}, '${totalSolana}')">Confirm Order</button>
-                <button class="submit-order-button" onclick="showShop()" style="margin-top: 10px; background-color: #f0ad4e; color: #333;">Cancel and Go Back</button>
-            `;
-            
-            checkoutSummaryContent.innerHTML = finalHtml;
-        }
-
         function checkout() {
             if (cart.length === 0) {
-                alert("Il carrello è vuoto. Aggiungi prima un prodotto.");
+                alert("Your cart is empty.");
                 return;
             }
-            
-            // Nasconde tutti gli stati eccetto il checkout
-            catMaskState.classList.remove('visible');
+
+            // Nasconde lo Shop
             shopState.classList.remove('visible');
+            shopState.style.display = 'none';
             cartModal.style.display = 'none';
-            
-            // Mostra lo stato di Checkout
+
+            // Mostra il Checkout
             checkoutState.style.display = 'flex';
             checkoutState.classList.add('visible');
-            document.title = 'Order Checkout';
-            
+            document.title = 'Checkout';
+
             renderCheckoutSummary();
-            
             window.scrollTo(0, 0);
         }
 
-        function confirmOrder(totalGBP, totalSOL) {
-            const orderNumber = generateOrderNumber();
+        function renderCheckoutSummary() {
+            let total = 0;
+            let summaryHTML = '';
+
+            cart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                
+                summaryHTML += `
+                    <div style="border-bottom: 1px dashed #ddd; padding-bottom: 15px; margin-bottom: 15px;">
+                        <img src="${item.img}" alt="${item.name}" class="summary-item-image">
+                        <div style="font-weight: bold;">${item.name} (x${item.quantity})</div>
+                        <div style="color: #007bff;">Total: £${itemTotal.toFixed(2)}</div>
+                    </div>
+                `;
+            });
             
-            // Nasconde lo stato di Checkout
+            const solanaAmount = convertToSolana(total);
+
+            summaryHTML += `
+                <div class="checkout-item-details">
+                    <p style="text-align: right; font-size: 1.5em; font-weight: bold; color: #333;">TOTAL: £${total.toFixed(2)}</p>
+                    <div class="solana-display">
+                        Pay ${solanaAmount} SOL (Wallet: ABC...XYZ)
+                    </div>
+                </div>
+                <div style="margin-top: 20px;">
+                    <p style="font-size: 0.9em; color: #555;">Fill in your details for Order Confirmation:</p>
+                    <input type="text" id="wallet-address" placeholder="Your Solana Wallet Address" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                    <input type="text" id="telegram-username" placeholder="Your Telegram @username" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                    <button class="submit-order-button" onclick="submitOrder(${total})">Complete Order (Send SOL)</button>
+                    <button class="submit-order-button" style="background-color: #dc3545;" onclick="showCatMask()">Cancel Order</button>
+                </div>
+            `;
+            
+            checkoutSummaryContent.innerHTML = summaryHTML;
+        }
+
+        function submitOrder(total) {
+            const wallet = document.getElementById('wallet-address').value;
+            const telegram = document.getElementById('telegram-username').value;
+
+            if (!wallet || !telegram) {
+                alert("Please fill in both your Solana Wallet Address and Telegram @username.");
+                return;
+            }
+
+            // Esegue l'invio dell'ordine (logica fittizia)
+            const orderNumber = generateOrderNumber();
+            const solanaAmount = convertToSolana(total);
+
+            // Nasconde il Checkout
             checkoutState.classList.remove('visible');
             checkoutState.style.display = 'none';
-            
-            // Mostra lo stato di Conferma
+
+            // Mostra la Conferma
             orderConfirmationState.style.display = 'flex';
             orderConfirmationState.classList.add('visible');
             document.title = 'Order Confirmed';
-            
+
             orderDetailsContent.innerHTML = `
-                <p><strong>Order Number:</strong> <span style="color: #007bff; font-size: 1.1em;">${orderNumber}</span></p>
-                <p><strong>Total Paid (GBP):</strong> £${totalGBP.toFixed(2)}</p>
-                <div class="solana-display" style="margin-top: 20px;">
-                    <strong>Total Paid (SOL):</strong> ${totalSOL} SOL
-                </div>
-                <p style="margin-top: 15px; color: #555;">Your order details have been secured.</p>
+                <p><strong>Order Number:</strong> <span style="color: #007bff;">${orderNumber}</span></p>
+                <p><strong>Total Paid:</strong> £${total.toFixed(2)} / ${solanaAmount} SOL</p>
+                <p><strong>Your Telegram:</strong> <span style="color: #007bff;">${telegram}</span></p>
+                <p><strong>Your Wallet:</strong> <span style="color: #007bff;">${wallet.substring(0, 10)}...</span></p>
+                <p style="margin-top: 20px; color: #28a745; font-style: italic;">Your order is now pending. Please send the payment of <strong>${solanaAmount} SOL</strong> to the wallet address provided in the previous step and send your order number to our Telegram.</p>
             `;
-            
-            // Pulisce il carrello dopo la conferma
-            cart = [];
-            updateCartCount();
+
             window.scrollTo(0, 0);
         }
 
         function finalizeOrder() {
-            // Reindirizza alla pagina iniziale del negozio (Shop Neutro)
-            showShop(); 
+            cart = []; // Svuota il carrello
+            updateCartCount();
+            showCatMask();
         }
-
-        // Assicuriamoci che lo stato iniziale sia corretto
-        showCatMask();
-
     </script>
 </body>
 </html>
