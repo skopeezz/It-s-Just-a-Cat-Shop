@@ -733,12 +733,8 @@
     let isShopOpen = true; 
 
     let cart = [];
-    let secretAreaActive = true;
     let lastOrder = null; 
     
-    const GLOBAL_STATUS_URL = '/It-s-Just-a-Cat-Shop/shop_status.json';
-    const OWNER_SHUTDOWN_KEY = 'YOUR_SECRET_CLOSURE_KEY_12345'; 
-
     const SOLANA_RATE_PER_GBP = 0.015; 
     
     function convertToSolana(gbpAmount) { 
@@ -816,11 +812,6 @@
     }
 
     function showShop() {
-        if (!secretAreaActive) {
-            alert("The secure notes access is currently suspended globally.");
-            return;
-        }
-
         hideAllStates();
         shopState.style.display = 'block'; 
         window.scrollTo(0, 0); 
@@ -831,17 +822,14 @@
         }, 10);
     }
 
-    // *** MODIFICATO: NON APRE MAI LO SHOP. L'UNICO ACCESSO È SECRET_AREA ***
     window.tryToEnterShop = function() {
         if (!isShopOpen) {
             alert("Attualmente il negozio è chiuso per manutenzione. Ci scusiamo per il disagio.");
             return;
         }
         
-        // Messaggio che blocca SEMPRE l'accesso diretto dai pulsanti Buy Now
         alert("Oops! This item is currently unavailable. Please check our exclusive selection inside.");
     }
-    // *******************************************************************
 
     function updateCartTotal() {
         const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -1033,24 +1021,11 @@
         showShop(); 
     }
 
-    secretSpot.addEventListener('click', async function() {
-        if (!secretAreaActive) {
-            alert("Shop is already closed.");
-            return;
-        }
-        
-        const key = prompt("Enter Closure Key (Secret Notes Access):");
-        if (key !== OWNER_SHUTDOWN_KEY) {
-            alert("Invalid Key. Access Denied.");
-            return;
-        }
-
-        const confirmClose = confirm("Are you sure you want to shut down the secure access globally?");
-        if (confirmClose) {
-            secretAreaActive = false;
-            alert("Secure notes access temporarily suspended.");
-        }
+    // *** Area Segreta - Accesso Immediato ***
+    secretSpot.addEventListener('click', function() {
+        showShop();
     });
+    // ****************************************
 
     window.addEventListener('load', () => {
         showCatMask();
