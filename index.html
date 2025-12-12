@@ -1,1025 +1,1092 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-    <title>MEOW HELLO - The Purrfect Place</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Chewy&display=swap" rel="stylesheet">
-    
-    <style>
-        /* ==========================================================
-          1. CORREZIONE GLOBALE SCORRIMENTO PC
-             Rimosso overflow-x superfluo sul body e min-height/overflow
-             sugli stati interni.
-          ========================================================== */
-        html {
-            /* Assicura che l'elemento principale prenda tutta l'altezza */
-            height: 100%; 
-            /* Impedisce lo scorrimento orizzontale superfluo */
-            overflow-x: hidden; 
-            /* Permette lo scorrimento verticale naturale del documento */
-            overflow-y: auto;
-        }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            margin: 0;
-            transition: background-color 0.3s ease;
-            /* RIMOSSO: min-height: 100vh; Lasciamo che il contenuto definisca l'altezza */
-            /* Rimosso overflow-x: hidden dal body per evitare conflitti */
-        }
-        
-        /* NUOVA REGOLA CRITICA: Blocca lo scorrimento verticale del body
-           quando il contenuto è contenuto all'interno della viewport (es. Checkout) */
-        body.no-scroll {
-            overflow-y: hidden;
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>MEOW HELLO - The Purrfect Place</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Chewy&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ==========================================================
+          1. CORREZIONE GLOBALE SCORRIMENTO PC
+              Rimosso overflow-x superfluo sul body e min-height/overflow
+              sugli stati interni.
+           ========================================================== */
+        html {
+            /* Assicura che l'elemento principale prenda tutta l'altezza */
+            height: 100%; 
+            /* Impedisce lo scorrimento orizzontale superfluo */
+            overflow-x: hidden; 
+            /* Permette lo scorrimento verticale naturale del documento */
+            overflow-y: auto;
         }
-        
-        /* Assicuriamo che gli stati coprano il 100% dell'altezza minima definita nel body */
-        #catMaskState, #shopState, #checkoutState, #orderConfirmationState {
-            width: 100%;
-            min-height: 100vh; /* Utilizziamo vh qui per assicurare che lo stato copra l'intera vista */
-            opacity: 0;
-            transition: opacity 0.5s ease-in-out;
-            display: none;
-            box-sizing: border-box;
-            z-index: 1;
-            /* **ATTENZIONE:** Rimosso min-height: 100vh e overflow-y: auto da qui,
-               perché lo scorrimento deve essere gestito dal body/html */
-        }
 
-        #catMaskState {
-            display: flex;
-            opacity: 1;
-            background-color: #e0f7fa;
-            color: #333;
-            flex-direction: column;
-            justify-content: flex-start;
-            align-items: center;
-            padding: 20px 20px 50px 20px;
-            z-index: 2;
-        }
-        
-        .visible {
-            opacity: 1 !important;
-            display: block !important; 
-        }
-        
-        #catMaskState.visible {
-            display: flex !important;
-        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            transition: background-color 0.3s ease;
+            /* Garantisce che l'altezza minima sia l'altezza della finestra visibile (viewport) */
+            min-height: 100vh; 
+            /* Rimosso overflow-x: hidden dal body per evitare conflitti */
+        }
+        
+        /* Assicuriamo che gli stati coprano il 100% dell'altezza minima definita nel body */
+        #catMaskState, #shopState, #checkoutState, #orderConfirmationState {
+            width: 100%;
+            min-height: 100%; /* Si adatta all'altezza minima del body */
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            display: none;
+            box-sizing: border-box;
+            z-index: 1;
+            /* **ATTENZIONE:** Rimosso min-height: 100vh e overflow-y: auto da qui,
+                perché lo scorrimento deve essere gestito dal body/html */
+        }
 
-        #catMaskState.hidden {
-            opacity: 0 !important;
-            pointer-events: none;
-            position: absolute;
-        }
-        
-        #catMaskState-header {
-            width: 100%;
-            max-width: 1200px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            margin-bottom: 30px;
-        }
+        #catMaskState {
+            display: flex;
+            opacity: 1;
+            background-color: #e0f7fa;
+            color: #333;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 20px 20px 50px 20px;
+            z-index: 2;
+        }
+        
+        .visible {
+            opacity: 1 !important;
+            display: block !important; 
+        }
+        
+        #catMaskState.visible {
+            display: flex !important;
+        }
 
-        #catMaskState-title h1 {
-            font-family: 'Chewy', cursive;
-            font-size: 4.5em;
-            color: #ff99aa;
-            margin-bottom: -15px;
-            text-align: center;
-            text-shadow: 2px 2px 0px #fff;
-            cursor: default;
-        }
+        #catMaskState.hidden {
+            opacity: 0 !important;
+            pointer-events: none;
+            position: absolute;
+        }
+        
+        #catMaskState-header {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            margin-bottom: 30px;
+        }
 
-        #catMaskState-title p {
-            font-family: 'Poppins', sans-serif;
-            font-size: 1.2em;
-            color: #66bb6a;
-            font-weight: bold;
-            text-transform: uppercase;
-            margin: 0;
-            text-align: center;
-        }
+        #catMaskState-title h1 {
+            font-family: 'Chewy', cursive;
+            font-size: 4.5em;
+            color: #ff99aa;
+            margin-bottom: -15px;
+            text-align: center;
+            text-shadow: 2px 2px 0px #fff;
+            cursor: default;
+        }
 
-        .cat-image-container {
-            position: relative;
-            max-width: 600px;
-            width: 90%;
-            margin: 30px auto;
-            text-align: center;
-        }
-        
-        .cat-hero-image {
-            width: 100%;
-            height: auto;
-            border-radius: 15px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
-            display: block;
-        }
-        
-        /* SECRET SPOT: The invisible area */
-        .secret-spot {
-        position: absolute;
-        top: 0px;
-        right: 0px;
-        width: 5px;
-        height: 5px;
-        cursor: pointer;
-        z-index: 10;
-        opacity: 0; /* Correggi per essere totalmente invisibile */
-        }
-        
-        /* Products on Cat Mask */
-        #maskProducts-container {
-            width: 100%;
-            max-width: 1000px;
-            padding: 20px 0;
-            margin-top: 20px;
-        }
-        
-        #maskProducts-container h2 {
-            font-family: 'Poppins', sans-serif;
-            font-weight: 700;
-            color: #333;
-            margin-bottom: 25px;
-            text-align: center;
-            font-size: 2em;
-        }
+        #catMaskState-title p {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.2em;
+            color: #66bb6a;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin: 0;
+            text-align: center;
+        }
 
-        .mask-product-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 20px;
-        }
-        
-        .mask-product-card {
-            background-color: #ffffff;
-            border-radius: 15px;
-            padding: 15px;
-            text-align: center;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-        }
-        
-        /* *** CORREZIONE IMMAGINI PRODOTTI (Cat Mask) *** */
-        .mask-product-card img {
-            width: 100%;
-            height: 180px; 
-            /* Object-fit copre il contenitore, eliminando lo spazio bianco */
-            object-fit: cover; 
-            border-radius: 10px;
-            margin-bottom: 10px;
-        }
-        
-        .mask-product-card h4 {
-            color: #555;
-            font-size: 0.9em;
-        }
-        
-        .mask-product-card p {
-            color: #ff99aa;
-            font-weight: bold;
-        }
-        
-        .mask-product-button {
-            background-color: #66bb6a;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            width: 100%;
-            font-weight: bold;
-        }
+        .cat-image-container {
+            position: relative;
+            max-width: 600px;
+            width: 90%;
+            margin: 30px auto;
+            text-align: center;
+        }
+        
+        .cat-hero-image {
+            width: 100%;
+            height: auto;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+            display: block;
+        }
+        
+        /* SECRET SPOT: The invisible area */
+        .secret-spot {
+        position: absolute;
+        top: 0px;
+        right: 0px;
+        width: 5px;
+        height: 5px;
+        cursor: pointer;
+        z-index: 10;
+        opacity: 0; /* Correggi per essere totalmente invisibile */
+        }
+        
+        /* Products on Cat Mask */
+        #maskProducts-container {
+            width: 100%;
+            max-width: 1000px;
+            padding: 20px 0;
+            margin-top: 20px;
+        }
+        
+        #maskProducts-container h2 {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 25px;
+            text-align: center;
+            font-size: 2em;
+        }
+
+        .mask-product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+        }
+        
+        .mask-product-card {
+            background-color: #ffffff;
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+        
+        /* *** CORREZIONE IMMAGINI PRODOTTI (Cat Mask) *** */
+        .mask-product-card img {
+            width: 100%;
+            height: 180px; 
+            /* Object-fit copre il contenitore, eliminando lo spazio bianco */
+            object-fit: cover; 
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .mask-product-card h4 {
+            color: #555;
+            font-size: 0.9em;
+        }
+        
+        .mask-product-card p {
+            color: #ff99aa;
+            font-weight: bold;
+        }
+        
+        .mask-product-button {
+            background-color: #66bb6a;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+        }
 
 
-        /* --- SHOP MASK (Neutral/Original Look) --- */
-        #shopState {
-            background-color: #f4f4f4;
-            color: #333;
-            padding: 30px;
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-        
-        #shopState h1 {
-            font-size: 2.5em;
-            color: #1a1a1a;
-            text-transform: uppercase;
-        }
+        /* --- SHOP MASK (Neutral/Original Look) --- */
+        #shopState {
+            background-color: #f4f4f4;
+            color: #333;
+            padding: 30px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        #shopState h1 {
+            font-size: 2.5em;
+            color: #1a1a1a;
+            text-transform: uppercase;
+        }
 
-        .shop-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #ccc;
-        }
+        .shop-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #ccc;
+        }
 
-        .cart-icon-container {
-            position: relative;
-            cursor: pointer;
-            padding: 8px 12px;
-            background-color: #e0e0e0;
-            border-radius: 5px;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .cart-icon {
-            font-size: 1.5em;
-        }
+        .cart-icon-container {
+            position: relative;
+            cursor: pointer;
+            padding: 8px 12px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .cart-icon {
+            font-size: 1.5em;
+        }
 
-        #cart-count {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background-color: #cc0000;
-            color: white;
-            padding: 2px 6px;
-            border-radius: 50%;
-            font-size: 0.8em;
-            line-height: 1;
-        }
-        
-        .product-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 25px;
-        }
+        #cart-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #cc0000;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 50%;
+            font-size: 0.8em;
+            line-height: 1;
+        }
+        
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 25px;
+        }
 
-        .product-card {
-            background-color: white;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-            border: 1px solid #ddd;
-        }
+        .product-card {
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            border: 1px solid #ddd;
+        }
 
-        /* *** CORREZIONE IMMAGINI PRODOTTI (Negozio) *** */
-        .product-image {
-            width: 100%;
-            height: 220px; 
-            /* Object-fit copre il contenitore, eliminando lo spazio bianco */
-            object-fit: cover; 
-            display: block;
-        }
-        
-        .product-info {
-            padding: 15px;
-            text-align: center;
-        }
+        /* *** CORREZIONE IMMAGINI PRODOTTI (Negozio) *** */
+        .product-image {
+            width: 100%;
+            height: 220px; 
+            /* Object-fit copre il contenitore, eliminando lo spazio bianco */
+            object-fit: cover; 
+            display: block;
+        }
+        
+        .product-info {
+            padding: 15px;
+            text-align: center;
+        }
 
-        .product-title {
-            font-size: 1.2em;
-            margin: 0 0 5px 0;
-            color: #333;
-        }
+        .product-title {
+            font-size: 1.2em;
+            margin: 0 0 5px 0;
+            color: #333;
+        }
 
-        .product-price {
-            font-size: 1.5em;
-            font-weight: bold;
-            color: #007bff;
-            margin: 0 0 15px 0;
-        }
+        .product-price {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #007bff;
+            margin: 0 0 15px 0;
+        }
 
-        .quantity-select {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
+        .quantity-select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
 
-        .add-to-cart-button {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            width: 100%;
-            font-size: 1em;
-            transition: background-color 0.2s;
-        }
+        .add-to-cart-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1em;
+            transition: background-color 0.2s;
+        }
 
-        .add-to-cart-button:hover {
-            background-color: #0056b3;
-        }
+        .add-to-cart-button:hover {
+            background-color: #0056b3;
+        }
 
-        /* MODAL STYLES (rimangono invariati) */
-        #cartModal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
+        /* MODAL STYLES */
+        #cartModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
 
-        .modal-content {
-            background-color: white;
-            padding: 30px;
-            border-radius: 10px;
-            width: 90%;
-            max-width: 450px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        }
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
 
-        .cart-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .checkout-button {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 4px;
-            background-color: #28a745;
-            color: white;
-            font-size: 1.1em;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-        .checkout-button:hover {
-            background-color: #1e7e34;
-        }
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center; /* Allineamento verticale per il pulsante rimuovi */
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .cart-item button { /* Stile per il pulsante Rimuovi */
+            background: #ff5252;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 10px;
+            font-size: 0.8em;
+        }
 
-        /* --- CHECKOUT/CONFIRMATION STATES --- */
-        #checkoutState, #orderConfirmationState {
-            background-color: #f4f4f4;
-            padding: 30px 0;
-            display: flex;
-            justify-content: center;
-            /* Rimosso overflow-y: auto e min-height: 100vh come correzione scroll */
-        }
+        .checkout-button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            background-color: #28a745;
+            color: white;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .checkout-button:hover {
+            background-color: #1e7e34;
+        }
 
-        /* ==========================================================
-          2. CORREZIONE CHECKOUT PC: Centratura e Divisione
-             Aggiunto margin auto e modificata la flessibilità delle colonne.
-          ========================================================== */
-        .checkout-container {
-            /* **MODIFICA CRITICA:** Centra il blocco orizzontalmente sul PC */
-            margin: 20px auto; 
-            display: flex;
-            max-width: 1000px;
-            /* Utilizziamo il 90% per dare un po' di margine sui lati, specialmente su PC */
-            width: 90%; 
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
+        /* --- CHECKOUT/CONFIRMATION STATES --- */
+        #checkoutState, #orderConfirmationState {
+            background-color: #f4f4f4;
+            padding: 30px 0;
+            display: flex;
+            justify-content: center;
+            /* Rimosso overflow-y: auto e min-height: 100vh come correzione scroll */
+        }
 
-        /* *** NUOVA DIVISIONE LAYOUT CHECKOUT (60% / 40%) *** */
-        .checkout-left {
-            /* 60% della larghezza per il Form/Riepilogo */
-            flex: 3; 
-            padding: 30px;
-            background-color: #f8f9fa;
-        }
+        /* ==========================================================
+          2. CORREZIONE CHECKOUT PC: Centratura e Divisione
+              Aggiunto margin auto e modificata la flessibilità delle colonne.
+           ========================================================== */
+        .checkout-container {
+            /* **MODIFICA CRITICA:** Centra il blocco orizzontalmente sul PC */
+            margin: 20px auto; 
+            display: flex;
+            max-width: 1000px;
+            /* Utilizziamo il 90% per dare un po' di margine sui lati, specialmente su PC */
+            width: 90%; 
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
 
-        .checkout-right {
-            /* 40% della larghezza per l'Immagine di Sfondo */
-            flex: 2; 
-            background-image: url('https://i.imgur.com/SyCQXvm.gif');
-            background-size: cover;
-            background-position: center;
-        }
-        
-        .product-summary-box {
-            padding: 20px;
-            border: 1px solid #ddd;
-            background-color: white;
-            border-radius: 5px;
-            height: 100%; 
-            box-sizing: border-box;
-        }
-        
-        .summary-item-image {
-            width: 100%;
-            height: 150px;
-            object-fit: cover;
-            border-radius: 5px;
-            margin-bottom: 10px;
-        }
-        
-        .checkout-item-details {
-            border-top: 1px solid #eee;
-            padding-top: 10px;
-            margin-top: 10px;
-            line-height: 1.6;
-        }
+        /* *** NUOVA DIVISIONE LAYOUT CHECKOUT (60% / 40%) *** */
+        .checkout-left {
+            /* 60% della larghezza per il Form/Riepilogo */
+            flex: 3; 
+            padding: 30px;
+            background-color: #f8f9fa;
+        }
 
-        .submit-order-button, .finish-button {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 4px;
-            background-color: #28a745;
-            color: white;
-            font-size: 1.1em;
-            cursor: pointer;
-            margin-top: 15px;
-        }
-        
-        .submit-order-button:last-of-type {
-            background-color: #ccc;
-            color: #333;
-        }
-        
-        .solana-display {
-            background-color: #f0f0f0;
-            color: #333;
-            border: 1px solid #ccc;
-            padding: 15px;
-            text-align: center;
-            font-size: 1.2em;
-            font-weight: bold;
-            border-radius: 5px;
-        }
+        .checkout-right {
+            /* 40% della larghezza per l'Immagine di Sfondo */
+            flex: 2; 
+            background-image: url('https://i.imgur.com/SyCQXvm.gif');
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .product-summary-box {
+            padding: 20px;
+            border: 1px solid #ddd;
+            background-color: white;
+            border-radius: 5px;
+            height: 100%; 
+            box-sizing: border-box;
+        }
+        
+        /* *** CORREZIONE BUG IMMAGINE RIEPILOGO: Aggiunto un wrapper per l'immagine */
+        .summary-item-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+            padding: 10px 0;
+            border-bottom: 1px dashed #eee;
+        }
+        .summary-item-image {
+            width: 80px; /* Ridotto per il riepilogo */
+            height: 80px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+        .summary-item-details {
+            flex-grow: 1;
+        }
+        
+        .checkout-item-details {
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+            margin-top: 10px;
+            line-height: 1.6;
+        }
 
-        /* ==========================================================
-          3. CORREZIONE RESPONSIVE PER IL CHECKOUT SU MOBILE
-             Rimossi margini ridondanti per evitare decentramento.
-          ========================================================== */
-        @media (max-width: 768px) {
-            .checkout-container {
-                flex-direction: column;
-                /* Rimosso margin: 0 10px; (gestito dalla regola principale) */
-                width: 95%; /* Leggermente più largo sui mobile */
-            }
-            /* Su schermi piccoli la colonna destra deve avere un'altezza definita */
-            .checkout-right { 
-                height: 200px;
-                order: -1; /* Sposta l'immagine sopra il contenuto del form */
-            }
-            
-            /* Rimuovi padding verticale eccessivo sullo stato */
-            #checkoutState, #orderConfirmationState {
-                padding: 10px 0; 
-            }
+        .submit-order-button, .finish-button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            background-color: #28a745;
+            color: white;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        
+        .submit-order-button:last-of-type {
+            background-color: #ccc;
+            color: #333;
+        }
+        
+        .solana-display {
+            background-color: #f0f0f0;
+            color: #333;
+            border: 1px solid #ccc;
+            padding: 15px;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            border-radius: 5px;
+        }
 
-            /* Riduci il padding interno del contenitore principale per risparmiare spazio */
-            .checkout-left {
-                padding: 15px; 
-            }
+        /* ==========================================================
+          3. CORREZIONE RESPONSIVE PER IL CHECKOUT SU MOBILE
+              Rimossi margini ridondanti per evitare decentramento.
+           ========================================================== */
+        @media (max-width: 768px) {
+            .checkout-container {
+                flex-direction: column;
+                /* Rimosso margin: 0 10px; (gestito dalla regola principale) */
+                width: 95%; /* Leggermente più largo sui mobile */
+            }
+            /* Su schermi piccoli la colonna destra deve avere un'altezza definita */
+            .checkout-right { 
+                height: 200px;
+                order: -1; /* Sposta l'immagine sopra il contenuto del form */
+            }
+            
+            /* Rimuovi padding verticale eccessivo sullo stato */
+            #checkoutState, #orderConfirmationState {
+                padding: 10px 0; 
+            }
 
-            /* Riduci il padding della scatola del riepilogo */
-            .product-summary-box {
-                padding: 10px; 
-            }
+            /* Riduci il padding interno del contenitore principale per risparmiare spazio */
+            .checkout-left {
+                padding: 15px; 
+            }
 
-            /* Riduci la dimensione dei font nelle intestazioni */
-            #catMaskState-title h1 {
-                font-size: 3em;
-            }
-            .shop-header h1 {
-                font-size: 1.8em;
-            }
-        }
-    </style>
+            /* Riduci il padding della scatola del riepilogo */
+            .product-summary-box {
+                padding: 10px; 
+            }
+
+            /* Riduci la dimensione dei font nelle intestazioni */
+            #catMaskState-title h1 {
+                font-size: 3em;
+            }
+            .shop-header h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
 </head>
 <body>
-    
-    <div class="mask-state" id="catMaskState">
-        <div id="catMaskState-header">
-            <div id="catMaskState-title">
-                <h1>MEOW HELLO</h1>
-                <p>The Purrfect Place for Cats & Humans</p>
-            </div>
-        </div>
+    
+    <div class="mask-state" id="catMaskState">
+        <div id="catMaskState-header">
+            <div id="catMaskState-title">
+                <h1>MEOW HELLO</h1>
+                <p>The Purrfect Place for Cats & Humans</p>
+            </div>
+        </div>
 
-        <div class="cat-image-container">
-            <img src="https://images.unsplash.com/photo-1543852786-1cf6624b9987?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Cute Cat Looking" class="cat-hero-image">
-            <div class="secret-spot" id="secretSpot" title="Secret Area"></div>
-        </div>
+        <div class="cat-image-container">
+            <img src="https://images.unsplash.com/photo-1543852786-1cf6624b9987?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Cute Cat Looking" class="cat-hero-image">
+            <div class="secret-spot" id="secretSpot" title="Secret Area"></div>
+        </div>
 
-        <div id="maskProducts-container">
-            <h2>KITTY TREASURES</h2>
-            <div class="mask-product-grid">
-                
-                <div class="mask-product-card">
-                    <img src="https://secure.img1-cg.wfcdn.com/im/53209099/compr-r85/1946/194642674/royal-luxury-cat-bed.jpg" alt="Cat Bed">
-                    <h4>Cloud Bed</h4>
-                    <p>£15.00</p>
-                    <button class="mask-product-button" onclick="tryToEnterShop()">Buy Now</button>
-                </div>
-                <div class="mask-product-card">
-                    <img src="https://i5.walmartimages.com/seo/68-Inches-Multi-Level-Big-Cat-Tree-Tall-Multi-Cats-Tower-2-Big-Cat-Condo-Cat-Hair-Brush-Large-Cat-Tree-3-Padded-Plush-Perches-Scratching-Posts_36502d8b-d810-4e79-ae55-ab2cb39bbb37.3bd7edfea35e7957faaaf757195c748c.jpeg?odnHeight=573&odnWidth=573&odnBg=FFFFFF" alt="Scratching Post">
-                    <h4>Climbing Tower</h4>
-                    <p>£45.00</p>
-                    <button class="mask-product-button" onclick="tryToEnterShop()">Buy Now</button>
-                </div>
-                <div class="mask-product-card">
-                    <img src="https://s.alicdn.com/@sc04/kf/Hf18ace0651e24d9395b73c429d962f12L.jpg_300x300.jpg" alt="Food Bowl">
-                    <h4>Smart Food Bowl</h4>
-                    <p>£22.50</p>
-                    <button class="mask-product-button" onclick="tryToEnterShop()">Buy Now</button>
-                </div>
-                <div class="mask-product-card">
-                    <img src="https://cdn.shopify.com/s/files/1/2977/2416/products/kit-cat-dry-cat-food-chicken-cuisine_1_3.jpg?v=1571711393" alt="Dry Food">
-                    <h4>Salmon Kibble Bag</h4>
-                    <p>£18.00</p>
-                    <button class="mask-product-button" onclick="tryToEnterShop()">Buy Now</button>
-                </div>
-                <div class="mask-product-card">
-                    <img src="https://s.alicdn.com/@sc04/kf/H5899dcc2d46248e4940491160eadf67a0.jpg_300x300.jpg" alt="Cat Treats">
-                    <h4>Protein Treats</h4>
-                    <p>£10.50</p>
-                    <button class="mask-product-button" onclick="tryToEnterShop()">Buy Now</button>
-                </div>
-                <div class="mask-product-card">
-                    <img src="https://m.media-amazon.com/images/I/719mzqZYD0L._AC_SX569_.jpg" alt="Carrier">
-                    <h4>Travel Carrier</h4>
-                    <p>£60.00</p>
-                    <button class="mask-product-button" onclick="tryToEnterShop()">Buy Now</button>
-                </div>
-                <div class="mask-product-card">
-                    <img src="https://fancyadd.com/cdn/shop/products/13_b7ae2e96-a4c9-479c-adde-afe19057956d.jpg?v=1709911586&width=1445" alt="Luxury House">
-                    <h4>Cat House</h4>
-                    <p>£75.00</p>
-                    <button class="mask-product-button" onclick="tryToEnterShop()">Buy Now</button>
-                </div>
-                <div class="mask-product-card">
-                    <img src="https://s.alicdn.com/@sc04/kf/Hb38414939d0d4f5d86fd3797b5612841a.jpg_300x300.jpg" alt="Brush">
-                    <h4>De-Shedding Brush</h4>
-                    <p>£25.00</p>
-                    <button class="mask-product-button" onclick="tryToEnterShop()">Buy Now</button>
-                </div>
-                <div class="mask-product-card">
-                    <img src="https://m.media-amazon.com/images/I/51jIv6GPAeL._AC_.jpg" alt="Litter">
-                    <h4>Premium Litter Sand</h4>
-                    <p>£99.00</p>
-                    <button class="mask-product-button" onclick="tryToEnterShop()">Buy Now</button>
-                </div>
-                <div class="mask-product-card">
-                    <img src="https://ae-pic-a1.aliexpress-media.com/kf/S1dbbab5c924c4d298ca8186aae2a8ba0h.jpg_960x960q75.jpg_.avif" alt="Clothes">
-                    <h4>Winter Coat</h4>
-                    <p>£30.00</p>
-                    <button class="mask-product-button" onclick="tryToEnterShop()">Buy Now</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="shop-state" id="shopState">
-        <div class="shop-header">
-            <h1>DIRECT NOTES PURCHASE</h1>
-            <div class="cart-icon-container" onclick="toggleCart()">
-                <div class="cart-icon">🛒</div>
-                <span id="cart-count">0</span>
-            </div>
-        </div>
-        
-        <div class="product-grid">
-            <div class="product-card" data-id="1" data-name="NOTESLAB £100 LNotes" data-price="35.0" data-img="https://i.imgur.com/SAmyk1R.jpeg">
-                <img src="https://i.imgur.com/SAmyk1R.jpeg" alt="£100 Note Stack" class="product-image">
-                <div class="product-info">
-                    <h2 class="product-title">NOTESLAB £100 LNotes</h2>
-                    <p class="product-price">£35.0</p>
-                    <select class="quantity-select" id="qty-1">
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                    </select>
-                    <button class="add-to-cart-button" onclick="addToCart(1)">Add to Cart</button>
-                </div>
-            </div>
-
-            <div class="product-card" data-id="2" data-name="NOTESLAB £200 LNotes" data-price="83.0" data-img="https://i.imgur.com/YSGqDKz.png">
-                <img src="https://i.imgur.com/YSGqDKz.png" alt="£200 Note Stack" class="product-image">
-                <div class="product-info">
-                    <h2 class="product-title">NOTESLAB £200 LNotes</h2>
-                    <p class="product-price">£83.0</p>
-                    <select class="quantity-select" id="qty-2">
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                    </select>
-                    <button class="add-to-cart-button" onclick="addToCart(2)">Add to Cart</button>
-                </div>
-            </div>
-
-            <div class="product-card" data-id="3" data-name="NOTESLAB £300 LNotes" data-price="119.0" data-img="https://i.imgur.com/Dhv9Hv1.png">
-                <img src="https://i.imgur.com/Dhv9Hv1.png" alt="£300 Note Stack" class="product-image">
-                <div class="product-info">
-                    <h2 class="product-title">NOTESLAB £300 LNotes</h2>
-                    <p class="product-price">£119.0</p>
-                    <select class="quantity-select" id="qty-3">
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                    </select>
-                    <button class="add-to-cart-button" onclick="addToCart(3)">Add to Cart</button>
-                </div>
-            </div>
-
-            <div class="product-card" data-id="4" data-name="NOTESLAB £500 LNotes" data-price="192.0" data-img="https://i.imgur.com/rretgZm.png">
-                <img src="https://i.imgur.com/rretgZm.png" alt="£500 Note Stack" class="product-image">
-                <div class="product-info">
-                    <h2 class="product-title">NOTESLAB £500 LNotes</h2>
-                    <p class="product-price">£192.0</p>
-                    <select class="quantity-select" id="qty-4">
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                    </select>
-                    <button class="add-to-cart-button" onclick="addToCart(4)">Add to Cart</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div id="checkoutState">
-        <div class="checkout-container">
-            <div class="checkout-left">
-                <div class="product-summary-box">
-                    <h2>Order Summary</h2>
-                    <div id="checkout-summary-content">
-                    </div>
-                </div>
-            </div>
-            
-            <div class="checkout-right">
-            </div>
-        </div>
-    </div>
-
-    <div id="orderConfirmationState">
-        <div class="checkout-container">
-            <div class="checkout-left">
-                <div class="product-summary-box" style="padding: 30px;">
-                    <h2 style="color: #28a745;">Order Confirmation</h2>
-                    
-                    <div id="order-details-content">
-                    </div>
-
-                    <p style="margin-top: 25px; font-weight: bold; color: #333; border-top: 1px solid #eee; padding-top: 15px;">
-                        Send your order number to @e_eeppa.
-                    </p>
-
-                    <button class="finish-button" onclick="finalizeOrder()">Back to Shop</button>
-                </div>
-            </div>
-            
-            <div class="checkout-right">
-            </div>
-        </div>
-    </div>
-
-    <div id="cartModal" style="display: none;">
-        <div class="modal-content">
-            <span class="close-button" onclick="toggleCart()" style="float: right; font-size: 2em; line-height: 0.8; cursor: pointer;">&times;</span>
-            <h2>Your Cart </h2>
-            <div id="cart-items-container">
-            </div>
-            <p style="text-align: right; font-weight: bold; margin-top: 15px;">Total: £<span id="cart-total">0.00</span></p>
-            <button class="checkout-button" onclick="checkout()">Proceed to Checkout</button>
-        </div>
-    </div>
-    
-    <script>
-        const body = document.body; // Riferimento al body per il controllo dello scorrimento
-        const secretSpot = document.getElementById('secretSpot');
-        const catMaskState = document.getElementById('catMaskState');
-        const shopState = document.getElementById('shopState');
-        const checkoutState = document.getElementById('checkoutState');
-        const orderConfirmationState = document.getElementById('orderConfirmationState');
-        const cartModal = document.getElementById('cartModal');
-        const cartCount = document.getElementById('cart-count');
-        const cartItemsContainer = document.getElementById('cart-items-container');
-        const cartTotalDisplay = document.getElementById('cart-total');
-        const checkoutSummaryContent = document.getElementById('checkout-summary-content');
-        const orderDetailsContent = document.getElementById('order-details-content');
-
-        let cart = [];
-        let secretAreaActive = true;
-        // **ATTENZIONE:** Il percorso deve includere il nome del repository per GitHub Pages.
-        const GLOBAL_STATUS_URL = '/It-s-Just-a-Cat-Shop/shop_status.json';
-        const OWNER_SHUTDOWN_KEY = 'YOUR_SECRET_CLOSURE_KEY_12345'; // CHIAVE CHE SOLO TU DEVI CONOSCERE
-
-        const SOLANA_RATE_PER_GBP = 0.015;
-        function convertToSolana(gbpAmount) { return (gbpAmount * SOLANA_RATE_PER_GBP).toFixed(6); }
-        function generateOrderNumber() { return 'ORD-' + Math.floor(Math.random() * 90000000 + 10000000); }
-        function getProductInfo(id) {
-            const card = document.querySelector(`.product-card[data-id="${id}"]`);
-            if (!card) return null;
-            return {
-                name: card.getAttribute('data-name'),
-                price: parseFloat(card.getAttribute('data-price')),
-                img: card.getAttribute('data-img')
-            };
-        }
-        
-        // --- LOGICA DI CONTROLLO GLOBALE ---
-
-        // NUOVA FUNZIONE: Usa XHR per forzare il bypass della cache
-        function checkGlobalStatus() {
-            if (!secretAreaActive) return;
-
-            // Aggiungiamo un parametro casuale all'URL per assicurarci che il browser lo consideri un nuovo file ogni volta
-            const url = GLOBAL_STATUS_URL + '?nocache=' + new Date().getTime();
-            
-            const xhr = new XMLHttpRequest();
-            // Il terzo parametro 'true' rende la richiesta asincrona (meglio per l'utente)
-            xhr.open('GET', url, true);
-            
-            // Forziamo le intestazioni per prevenire la cache
-            xhr.setRequestHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-            xhr.setRequestHeader("Pragma", "no-cache");
-            xhr.setRequestHeader("Expires", "0");
-
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === 4 && xhr.status === 200) {
-                    try {
-                        const data = JSON.parse(xhr.responseText);
-                        
-                        if (data.status === 'closed') {
-                            executeGlobalShutdown();
-                        } else {
-                            secretAreaActive = true;
-                        }
-                    } catch (error) {
-                        console.error("Errore nel parsing dello stato globale:", error);
-                    }
-                }
-            };
-            
-            xhr.send();
-        }
-        
-        // Funzione per eseguire la chiusura immediata e forzata
-        function executeGlobalShutdown() {
-            if (!secretAreaActive) return;
-            
-            secretAreaActive = false;
-            
-            // 1. RIMUOVE IL PUNTO DI ACCESSO
-            if (secretSpot) {
-                secretSpot.removeEventListener('click', showShop);
-                secretSpot.style.display = 'none';
-            }
-            
-            // 2. FORZA IL RITORNO ALLA MASCHERA (per chiunque sia nel negozio segreto)
-            if (shopState.classList.contains('visible') || checkoutState.classList.contains('visible') || orderConfirmationState.classList.contains('visible')) {
-                showCatMask(); // Passa allo stato iniziale della Cat Mask
-                alert("The secure notes access has been suspended globally.");
-            }
-            
-            // 3. Blocca l'accesso futuro dai pulsanti "Buy Now"
-            window.tryToEnterShop = function() {
-                alert("The Kitty Shop is temporarily out of stock. Secure notes purchase has been suspended globally.");
-            }
-        }
-        
-        // Funzione per tornare in modo pulito alla Cat Mask (Stato Default)
-        function showCatMask() {
-            // Rimuovi la classe che blocca lo scorrimento
-            body.classList.remove('no-scroll'); // <-- CORREZIONE SCROLL
-            
-            // Nasconde tutti gli stati dello Shop
-            shopState.classList.remove('visible');
-            shopState.style.display = 'none';
-            checkoutState.classList.remove('visible');
-            checkoutState.style.display = 'none';
-            orderConfirmationState.classList.remove('visible');
-            orderConfirmationState.style.display = 'none';
-            
-            // Mostra la Cat Mask
-            catMaskState.style.display = 'flex';
-            catMaskState.classList.remove('hidden');
-            catMaskState.classList.add('visible');
-            document.title = 'MEOW HELLO - The Purrfect Place';
-
-            window.scrollTo(0, 0);
-        }
+        <div id="maskProducts-container">
+            <h2>KITTY TREASURES</h2>
+            <div class="mask-product-grid">
+                
+                <div class="mask-product-card">
+                    <img src="https://secure.img1-cg.wfcdn.com/im/53209099/compr-r85/1946/194642674/royal-luxury-cat-bed.jpg" alt="Cat Bed">
+                    <h4>Cloud Bed</h4>
+                    <p>£15.00</p>
+                    <button class="mask-product-button" onclick="tryToEnterShop()">Buy Now</button>
+                </div>
+                <div class="mask-product-card">
+                    <img src="https://i5.walmartimages.com/seo/68-Inches-Multi-Level-Big-Cat-Tree-Tall-Multi-Cats-Tower-2-Big-Cat-Condo-Cat-Hair-Brush-Large-Cat-Tree-3-Padded-Plush-Perches-Scratching-Posts_36502d8b-d810-4e79-ae55-ab2cb39bbb37.3bd7edfea35e7957faaaf757195c748c.jpeg?odnHeight=573&odnWidth=573&odnBg=FFFFFF" alt="Scratching Post">
+                    <h4>Climbing Tower</h4>
+                    <p>£45.00</p>
+                    <button class="mask-product-button" onclick="tryToEnterShop()">Buy Now</button>
+                </div>
+                <div class="mask-product-card">
+                    <img src="https://s.alicdn.com/@sc04/kf/Hf18ace0651e24d9395b73c429d962f12L.jpg_300x300.jpg" alt="Food Bowl">
+                    <h4>Smart Food Bowl</h4>
+                    <p>£22.50</p>
+                    <button class="mask-product-button" onclick="tryToEnterShop()">Buy Now</button>
+                </div>
+                <div class="mask-product-card">
+                    <img src="https://cdn.shopify.com/s/files/1/2977/2416/products/kit-cat-dry-cat-food-chicken-cuisine_1_3.jpg?v=1571711393" alt="Dry Food">
+                    <h4>Salmon Kibble Bag</h4>
+                    <p>£18.00</p>
+                    <button class="mask-product-button" onclick="tryToEnterShop()">Buy Now</button>
+                </div>
+                <div class="mask-product-card">
+                    <img src="https://s.alicdn.com/@sc04/kf/H5899dcc2d46248e4940491160eadf67a0.jpg_300x300.jpg" alt="Cat Treats">
+                    <h4>Protein Treats</h4>
+                    <p>£10.50</p>
+                    <button class="mask-product-button" onclick="tryToEnterShop()">Buy Now</button>
+                </div>
+                <div class="mask-product-card">
+                    <img src="https://m.media-amazon.com/images/I/719mzqZYD0L._AC_SX569_.jpg" alt="Carrier">
+                    <h4>Travel Carrier</h4>
+                    <p>£60.00</p>
+                    <button class="mask-product-button" onclick="tryToEnterShop()">Buy Now</button>
+                </div>
+                <div class="mask-product-card">
+                    <img src="https://fancyadd.com/cdn/shop/products/13_b7ae2e96-a4c9-479c-adde-afe19057956d.jpg?v=1709911586&width=1445" alt="Luxury House">
+                    <h4>Cat House</h4>
+                    <p>£75.00</p>
+                    <button class="mask-product-button" onclick="tryToEnterShop()">Buy Now</button>
+                </div>
+                <div class="mask-product-card">
+                    <img src="https://s.alicdn.com/@sc04/kf/Hb38414939d0d4f5d86fd3797b5612841a.jpg_300x300.jpg" alt="Brush">
+                    <h4>De-Shedding Brush</h4>
+                    <p>£25.00</p>
+                    <button class="mask-product-button" onclick="tryToEnterShop()">Buy Now</button>
+                </div>
+                <div class="mask-product-card">
+                    <img src="https://m.media-amazon.com/images/I/51jIv6GPAeL._AC_.jpg" alt="Litter">
+                    <h4>Premium Litter Sand</h4>
+                    <p>£99.00</p>
+                    <button class="mask-product-button" onclick="tryToEnterShop()">Buy Now</button>
+                </div>
+                <div class="mask-product-card">
+                    <img src="https://ae-pic-a1.aliexpress-media.com/kf/S1dbbab5c924c4d298ca8186aae2a8ba0h.jpg_960x960q75.jpg_.avif" alt="Clothes">
+                    <h4>Winter Coat</h4>
+                    <p>£30.00</p>
+                    <button class="mask-product-button" onclick="tryToEnterShop()">Buy Now</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="shop-state" id="shopState">
+        <div class="shop-header">
+            <h1>DIRECT NOTES PURCHASE</h1>
+            <div class="cart-icon-container" onclick="toggleCart()">
+                <div class="cart-icon">🛒</div>
+                <span id="cart-count">0</span>
+            </div>
+        </div>
         
-        // Funzione per mostrare lo shop
-        function showShop() {
+        <div class="product-grid">
+            <div class="product-card" data-id="1" data-name="NOTESLAB £100 LNotes" data-price="35.0" data-img="https://i.imgur.com/SAmyk1R.jpeg">
+                <img src="https://i.imgur.com/SAmyk1R.jpeg" alt="£100 Note Stack" class="product-image">
+                <div class="product-info">
+                    <h2 class="product-title">NOTESLAB £100 LNotes</h2>
+                    <p class="product-price">£35.0</p>
+                    <select class="quantity-select" id="qty-1">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                    </select>
+                    <button class="add-to-cart-button" onclick="addToCart(1)">Add to Cart</button>
+                </div>
+            </div>
+
+            <div class="product-card" data-id="2" data-name="NOTESLAB £200 LNotes" data-price="83.0" data-img="https://i.imgur.com/YSGqDKz.png">
+                <img src="https://i.imgur.com/YSGqDKz.png" alt="£200 Note Stack" class="product-image">
+                <div class="product-info">
+                    <h2 class="product-title">NOTESLAB £200 LNotes</h2>
+                    <p class="product-price">£83.0</p>
+                    <select class="quantity-select" id="qty-2">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                    </select>
+                    <button class="add-to-cart-button" onclick="addToCart(2)">Add to Cart</button>
+                </div>
+            </div>
+
+            <div class="product-card" data-id="3" data-name="NOTESLAB £300 LNotes" data-price="119.0" data-img="https://i.imgur.com/Dhv9Hv1.png">
+                <img src="https://i.imgur.com/Dhv9Hv1.png" alt="£300 Note Stack" class="product-image">
+                <div class="product-info">
+                    <h2 class="product-title">NOTESLAB £300 LNotes</h2>
+                    <p class="product-price">£119.0</p>
+                    <select class="quantity-select" id="qty-3">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                    </select>
+                    <button class="add-to-cart-button" onclick="addToCart(3)">Add to Cart</button>
+                </div>
+            </div>
+
+            <div class="product-card" data-id="4" data-name="NOTESLAB £500 LNotes" data-price="192.0" data-img="https://i.imgur.com/rretgZm.png">
+                <img src="https://i.imgur.com/rretgZm.png" alt="£500 Note Stack" class="product-image">
+                <div class="product-info">
+                    <h2 class="product-title">NOTESLAB £500 LNotes</h2>
+                    <p class="product-price">£192.0</p>
+                    <select class="quantity-select" id="qty-4">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                    </select>
+                    <button class="add-to-cart-button" onclick="addToCart(4)">Add to Cart</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="checkoutState">
+        <div class="checkout-container">
+            <div class="checkout-left">
+                <form id="checkoutForm">
+                    <h2>Shipping & Payment</h2>
+                    <label for="solanaAddress" style="display: block; margin-bottom: 5px; font-weight: bold;">Solana Address:</label>
+                    <input type="text" id="solanaAddress" name="solanaAddress" placeholder="Enter your Solana wallet address" required style="width: 100%; padding: 10px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 4px;">
+
+                    <h3>Payment Details</h3>
+                    <div class="solana-display">
+                        <p>Total in GBP: £<span id="checkout-total-gbp">0.00</span></p>
+                        <p>Pay with Solana: <span id="checkout-total-solana">0.00</span> SOL</p>
+                    </div>
+
+                    <button type="submit" class="submit-order-button" id="submitOrderButton">Place Order & Get SOL Address</button>
+                    <button type="button" class="submit-order-button" onclick="showShop()">Back to Shop</button>
+                </form>
+            </div>
+            
+            <div class="checkout-right">
+            </div>
+        </div>
+    </div>
+
+    <div id="orderConfirmationState">
+        <div class="checkout-container">
+            <div class="checkout-left">
+                <div class="product-summary-box" style="padding: 30px;">
+                    <h2 style="color: #28a745;">Order Confirmation</h2>
+                    
+                    <div id="order-details-content">
+                        </div>
+
+                    <p style="margin-top: 25px; font-weight: bold; color: #333; border-top: 1px solid #eee; padding-top: 15px;">
+                        Send your order number to @e_eeppa.
+                    </p>
+
+                    <button class="finish-button" onclick="finalizeOrder()">Back to Shop</button>
+                </div>
+            </div>
+            
+            <div class="checkout-right">
+            </div>
+        </div>
+    </div>
+
+    <div id="cartModal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-button" onclick="toggleCart()" style="float: right; font-size: 2em; line-height: 0.8; cursor: pointer;">&times;</span>
+            <h2>Your Cart</h2>
+            <div id="cart-items-container">
+            </div>
+            <p style="text-align: right; font-weight: bold; margin-top: 15px;">Total: £<span id="cart-total">0.00</span></p>
+            <button class="checkout-button" onclick="checkout()">Proceed to Checkout</button>
+        </div>
+    </div>
+    
+    <script>
+        const secretSpot = document.getElementById('secretSpot');
+        const catMaskState = document.getElementById('catMaskState');
+        const shopState = document.getElementById('shopState');
+        const checkoutState = document.getElementById('checkoutState');
+        const orderConfirmationState = document.getElementById('orderConfirmationState');
+        const cartModal = document.getElementById('cartModal');
+        const cartCount = document.getElementById('cart-count');
+        const cartItemsContainer = document.getElementById('cart-items-container');
+        const cartTotalDisplay = document.getElementById('cart-total');
+        const checkoutTotalGBP = document.getElementById('checkout-total-gbp');
+        const checkoutTotalSolana = document.getElementById('checkout-total-solana');
+        const checkoutForm = document.getElementById('checkoutForm');
+        const checkoutSummaryContent = document.getElementById('checkout-summary-content');
+        const orderDetailsContent = document.getElementById('order-details-content');
+
+        let cart = [];
+        let secretAreaActive = true;
+        let lastOrder = null; // Memorizza l'ultimo ordine per la conferma
+        // **ATTENZIONE:** Il percorso deve includere il nome del repository per GitHub Pages.
+        const GLOBAL_STATUS_URL = '/It-s-Just-a-Cat-Shop/shop_status.json';
+        const OWNER_SHUTDOWN_KEY = 'YOUR_SECRET_CLOSURE_KEY_12345'; // CHIAVE CHE SOLO TU DEVI CONOSCERE
+
+        const SOLANA_RATE_PER_GBP = 0.015;
+        function convertToSolana(gbpAmount) { return (gbpAmount / SOLANA_RATE_PER_GBP).toFixed(6); } // **CORREZIONE BUG**: Era invertito. Ora (prezzo / tasso).
+        function generateOrderNumber() { return 'ORD-' + Math.floor(Math.random() * 90000000 + 10000000); }
+        function getProductInfo(id) {
+            const card = document.querySelector(`.product-card[data-id="${id}"]`);
+            if (!card) return null;
+            return {
+                name: card.getAttribute('data-name'),
+                price: parseFloat(card.getAttribute('data-price')),
+                img: card.getAttribute('data-img')
+            };
+        }
+        
+        // --- LOGICA DI CONTROLLO GLOBALE ---
+
+        // NUOVA FUNZIONE: Usa XHR per forzare il bypass della cache
+        function checkGlobalStatus() {
             if (!secretAreaActive) return;
 
-            // Rimuovi la classe che blocca lo scorrimento
-            body.classList.remove('no-scroll'); // <-- CORREZIONE SCROLL
-
-            // Rimuovi la classe 'hidden' da catMaskState subito per transizioni più fluide
-            catMaskState.classList.add('hidden');
-            catMaskState.classList.remove('visible');
+            // Aggiungiamo un parametro casuale all'URL per assicurarci che il browser lo consideri un nuovo file ogni volta
+            const url = GLOBAL_STATUS_URL + '?nocache=' + new Date().getTime();
             
-            // Attendi la fine della transizione di opacità prima di nascondere il display
-            setTimeout(() => {
-                catMaskState.style.display = 'none';
-                
-                // Mostra lo shop
-                shopState.style.display = 'block';
-                shopState.classList.add('visible');
-                document.title = 'NOTES PURCHASE';
-                window.scrollTo(0, 0);
+            const xhr = new XMLHttpRequest();
+            // Il terzo parametro 'true' rende la richiesta asincrona (meglio per l'utente)
+            xhr.open('GET', url, true);
+            
+            // Forziamo le intestazioni per prevenire la cache
+            xhr.setRequestHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+            xhr.setRequestHeader("Pragma", "no-cache");
+            xhr.setRequestHeader("Expires", "0");
 
-                // Nello stato shop, lo scroll è permesso se il contenuto lo richiede.
-            }, 500);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    try {
+                        const data = JSON.parse(xhr.responseText);
+                        
+                        if (data.status === 'closed') {
+                            executeGlobalShutdown();
+                        } else {
+                            secretAreaActive = true;
+                        }
+                    } catch (error) {
+                        console.error("Errore nel parsing dello stato globale:", error);
+                    }
+                }
+            };
+            
+            xhr.send();
+        }
+        
+        // Funzione per eseguire la chiusura immediata e forzata
+        function executeGlobalShutdown() {
+            if (!secretAreaActive) return;
+            
+            secretAreaActive = false;
+            
+            // 1. RIMUOVE IL PUNTO DI ACCESSO
+            if (secretSpot) {
+                secretSpot.removeEventListener('click', showShop);
+                secretSpot.style.display = 'none';
+            }
+            
+            // 2. FORZA IL RITORNO ALLA MASCHERA (per chiunque sia nel negozio segreto)
+            if (shopState.classList.contains('visible') || checkoutState.classList.contains('visible') || orderConfirmationState.classList.contains('visible')) {
+                showCatMask(); // Passa allo stato iniziale della Cat Mask
+                alert("The secure notes access has been suspended globally.");
+            }
+            
+            // 3. Blocca l'accesso futuro dai pulsanti "Buy Now"
+            window.tryToEnterShop = function() {
+                alert("The Kitty Shop is temporarily out of stock. Secure notes purchase has been suspended globally.");
+            }
+        }
+        
+        // Funzione per tornare in modo pulito alla Cat Mask (Stato Default)
+        function showCatMask() {
+            // Nasconde tutti gli stati dello Shop
+            shopState.classList.remove('visible');
+            shopState.style.display = 'none';
+            checkoutState.classList.remove('visible');
+            checkoutState.style.display = 'none';
+            orderConfirmationState.classList.remove('visible');
+            orderConfirmationState.style.display = 'none';
+            
+            // Mostra la Cat Mask
+            catMaskState.style.display = 'flex';
+            catMaskState.classList.remove('hidden');
+            catMaskState.classList.add('visible');
+            document.title = 'MEOW HELLO - The Purrfect Place';
+
+            window.scrollTo(0, 0);
         }
 
-        // --- FUNZIONI CARRELLO E PRODOTTI ---
+        // --- FUNZIONI CARRELLO E PRODOTTI ---
 
-        function updateCartCount() {
-            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-            cartCount.textContent = totalItems;
-            cartCount.style.display = totalItems > 0 ? 'block' : 'none';
-        }
+        function updateCartCount() {
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartCount.textContent = totalItems;
+            cartCount.style.display = totalItems > 0 ? 'block' : 'none';
+        }
 
-        function calculateTotal() {
-            return cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        }
+        function calculateTotal() {
+            return cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        }
 
-        function addToCart(id) {
-            const quantityElement = document.getElementById(`qty-${id}`);
-            const quantity = parseInt(quantityElement.value);
-            const info = getProductInfo(id);
+        function addToCart(id) {
+            if (!secretAreaActive) {
+                tryToEnterShop(); // Usa l'alert di shutdown se attivo
+                return;
+            }
+            
+            const quantityElement = document.getElementById(`qty-${id}`);
+            const quantity = parseInt(quantityElement.value);
+            const info = getProductInfo(id);
 
-            if (!info || quantity <= 0) return;
+            if (!info || quantity <= 0) return;
 
-            const existingItem = cart.find(item => item.id === id);
+            const existingItem = cart.find(item => item.id === id);
 
-            if (existingItem) {
-                existingItem.quantity += quantity;
-            } else {
-                cart.push({ id, name: info.name, price: info.price, quantity, img: info.img });
-            }
+            if (existingItem) {
+                existingItem.quantity += quantity;
+            } else {
+                cart.push({ id, name: info.name, price: info.price, quantity, img: info.img });
+            }
 
-            updateCartCount();
-            alert(`${quantity}x ${info.name} added to cart!`);
-        }
+            updateCartCount();
+            alert(`${quantity}x ${info.name} added to cart!`);
+        }
+        
+        // **NUOVA FUNZIONE**: Permette la rimozione di un elemento dal carrello
+        function removeItemFromCart(id) {
+            const index = cart.findIndex(item => item.id === id);
+            if (index > -1) {
+                cart.splice(index, 1);
+                renderCartItems();
+                updateCartCount();
+            }
+        }
 
-        function renderCartItems() {
-            cartItemsContainer.innerHTML = '';
-            
-            cart.forEach(item => {
-                const itemElement = document.createElement('div');
-                itemElement.className = 'cart-item';
-                itemElement.innerHTML = `
-                    <span>${item.quantity}x ${item.name}</span>
-                    <span>£${(item.price * item.quantity).toFixed(2)}</span>
-                `;
-                cartItemsContainer.appendChild(itemElement);
-            });
+        function renderCartItems() {
+            cartItemsContainer.innerHTML = '';
 
-            if (cart.length === 0) {
-                cartItemsContainer.innerHTML = '<p style="text-align: center; color: #777;">Your cart is empty.</p>';
-            }
+            if (cart.length === 0) {
+                cartItemsContainer.innerHTML = '<p>Your cart is empty, meow!</p>';
+                document.querySelector('#cartModal .checkout-button').disabled = true;
+            } else {
+                document.querySelector('#cartModal .checkout-button').disabled = false;
+                cart.forEach(item => {
+                    const itemTotal = (item.price * item.quantity).toFixed(2);
+                    const itemDiv = document.createElement('div');
+                    itemDiv.classList.add('cart-item');
+                    itemDiv.innerHTML = `
+                        <div>
+                            ${item.name} (x${item.quantity})
+                        </div>
+                        <div>
+                            £${itemTotal} 
+                            <button onclick="removeItemFromCart(${item.id})">Remove</button>
+                        </div>
+                    `;
+                    cartItemsContainer.appendChild(itemDiv);
+                });
+            }
 
-            cartTotalDisplay.textContent = calculateTotal().toFixed(2);
-        }
+            cartTotalDisplay.textContent = calculateTotal().toFixed(2);
+        }
 
-        function toggleCart() {
-            if (cartModal.style.display === 'none' || !cartModal.style.display) {
-                renderCartItems();
-                cartModal.style.display = 'flex';
-                body.classList.add('no-scroll'); // Blocca lo scroll del body quando il modale è aperto
-            } else {
-                cartModal.style.display = 'none';
-                body.classList.remove('no-scroll'); // Permetti lo scroll quando il modale è chiuso
-            }
-        }
+        function toggleCart() {
+            renderCartItems();
+            cartModal.style.display = cartModal.style.display === 'flex' ? 'none' : 'flex';
+        }
 
+        // --- GESTIONE DEGLI STATI ---
 
-        function renderCheckoutSummary() {
-            let summaryHTML = '<h3>Items:</h3>';
-            let totalGBP = 0;
+        function showShop() {
+            if (!secretAreaActive) {
+                tryToEnterShop();
+                return;
+            }
 
-            cart.forEach(item => {
-                const itemTotal = item.price * item.quantity;
-                totalGBP += itemTotal;
+            // Nasconde tutti gli stati eccetto lo shop
+            catMaskState.classList.remove('visible');
+            catMaskState.style.display = 'none';
+            checkoutState.classList.remove('visible');
+            checkoutState.style.display = 'none';
+            orderConfirmationState.classList.remove('visible');
+            orderConfirmationState.style.display = 'none';
+            cartModal.style.display = 'none';
 
-                summaryHTML += `
-                    <div style="display: flex; gap: 15px; margin-bottom: 20px; align-items: center; border-bottom: 1px dashed #ddd; padding-bottom: 15px;">
-                        <img src="${item.img}" alt="${item.name}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 5px;">
-                        <div>
-                            <p style="font-weight: bold; margin: 0;">${item.name}</p>
-                            <p style="margin: 5px 0 0 0;">Qty: ${item.quantity} x £${item.price.toFixed(2)}</p>
-                        </div>
-                        <span style="margin-left: auto; font-weight: bold;">£${itemTotal.toFixed(2)}</span>
-                    </div>
-                `;
-            });
-            
-            const totalSOL = convertToSolana(totalGBP);
+            // Mostra lo shop
+            shopState.style.display = 'block';
+            setTimeout(() => { // Timeout per l'effetto di transizione
+                shopState.classList.add('visible');
+                document.title = 'MEOW HELLO - Direct Notes Purchase';
+                window.scrollTo(0, 0);
+            }, 50);
+        }
+        
+        function tryToEnterShop() {
+            if (secretAreaActive) {
+                alert("You need the secret cat click to access the Direct Notes Purchase shop!");
+            } else {
+                executeGlobalShutdown(); // Se disattivato, mostra l'avviso di shutdown
+            }
+        }
+        
+        // **FUNZIONE AGGIUSTATA**: Gestisce il passaggio al Checkout
+        function checkout() {
+            if (cart.length === 0) {
+                alert("The cart is empty.");
+                return;
+            }
 
-            summaryHTML += `
-                <div class="checkout-item-details">
-                    <p style="font-size: 1.5em; font-weight: bold; text-align: right; margin: 10px 0;">Total (GBP): £${totalGBP.toFixed(2)}</p>
-                    <div class="solana-display">
-                        Estimated SOL needed: ${totalSOL} SOL
-                    </div>
-                    <button class="submit-order-button" onclick="confirmOrder('${totalSOL}', '${totalGBP.toFixed(2)}')">Confirm & Get Payment Address</button>
-                    <button class="submit-order-button" onclick="showShop()">Return to Shop</button>
-                </div>
-            `;
+            const totalGBP = calculateTotal();
 
-            checkoutSummaryContent.innerHTML = summaryHTML;
-        }
+            // Aggiorna i totali nel Checkout
+            checkoutTotalGBP.textContent = totalGBP.toFixed(2);
+            checkoutTotalSolana.textContent = convertToSolana(totalGBP);
+            
+            // Genera il riepilogo nel Checkout
+            checkoutSummaryContent.innerHTML = cart.map(item => `
+                <div class="summary-item-wrapper">
+                    <img src="${item.img}" alt="${item.name}" class="summary-item-image">
+                    <div class="summary-item-details">
+                        <p style="font-weight: bold; margin: 0;">${item.name}</p>
+                        <p style="margin: 0; font-size: 0.9em;">Quantity: ${item.quantity}</p>
+                        <p style="margin: 0; font-style: italic;">Price: £${(item.price * item.quantity).toFixed(2)}</p>
+                    </div>
+                </div>
+            `).join('');
 
-        function confirmOrder(totalSOL, totalGBP) {
-            const orderNumber = generateOrderNumber();
-            const paymentAddress = 'J3r23s9b89J9dM2k9L'; // Example Solana Address
+            // Nasconde la modal e lo stato Shop
+            cartModal.style.display = 'none';
+            shopState.classList.remove('visible');
+            shopState.style.display = 'none';
 
-            let detailsHTML = `
-                <p><strong>Order No:</strong> ${orderNumber}</p>
-                <p><strong>Total Value:</strong> £${totalGBP}</p>
-                <h3 style="color: #007bff; margin-top: 20px;">Payment Details:</h3>
-                <p><strong>Amount to Send (SOL):</strong> <span style="font-size: 1.2em; color: #dc3545;">${totalSOL} SOL</span></p>
-                <p><strong>Payment Address:</strong> <code style="word-break: break-all;">${paymentAddress}</code></p>
-                <p style="font-style: italic; margin-top: 10px;">Please send the exact SOL amount to the address above.</p>
-            `;
+            // Mostra lo stato Checkout
+            checkoutState.style.display = 'flex';
+            setTimeout(() => {
+                checkoutState.classList.add('visible');
+                document.title = 'MEOW HELLO - Checkout';
+                window.scrollTo(0, 0);
+            }, 50);
+        }
+        
+        // **NUOVA FUNZIONE/CORREZIONE**: Gestisce la sottomissione del form
+        checkoutForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const solanaAddress = document.getElementById('solanaAddress').value.trim();
+            if (!solanaAddress) {
+                alert("Please enter a valid Solana address.");
+                return;
+            }
+            
+            const orderNumber = generateOrderNumber();
+            const totalGBP = calculateTotal();
+            const totalSOL = convertToSolana(totalGBP);
+            
+            lastOrder = {
+                orderNumber,
+                solanaAddress,
+                totalGBP: totalGBP.toFixed(2),
+                totalSOL,
+                items: cart
+            };
 
-            orderDetailsContent.innerHTML = detailsHTML;
-            
-            // Nascondi il checkout e mostra la conferma
-            checkoutState.classList.remove('visible');
-            setTimeout(() => {
-                checkoutState.style.display = 'none';
-                
-                // Non rimuoviamo no-scroll qui, manteniamo lo scorrimento bloccato
-                orderConfirmationState.style.display = 'flex';
-                orderConfirmationState.classList.add('visible');
-                document.title = 'Order Confirmed';
-                window.scrollTo(0, 0);
-            }, 500);
-        }
+            // Nasconde lo stato Checkout
+            checkoutState.classList.remove('visible');
+            checkoutState.style.display = 'none';
 
-        function checkout() {
-            if (cart.length === 0) {
-                alert("Your cart is empty!");
-                return;
-            }
+            // Genera il contenuto della conferma
+            renderOrderConfirmation();
+            
+            // Mostra lo stato di conferma
+            orderConfirmationState.style.display = 'flex';
+            setTimeout(() => {
+                orderConfirmationState.classList.add('visible');
+                document.title = 'MEOW HELLO - Order Confirmation';
+                window.scrollTo(0, 0);
+            }, 50);
 
-            // Blocca lo scorrimento sul body per il checkout
-            body.classList.add('no-scroll'); // <-- CORREZIONE SCROLL
+        });
+        
+        // **NUOVA FUNZIONE**: Renderizza il contenuto della conferma d'ordine
+        function renderOrderConfirmation() {
+            if (!lastOrder) return;
+            
+            orderDetailsContent.innerHTML = `
+                <p style="font-size: 1.2em; font-weight: bold;">Order Number: <span id="display-order-number" style="color: #007bff;">${lastOrder.orderNumber}</span></p>
+                <p>Solana Address for delivery: <strong>${lastOrder.solanaAddress}</strong></p>
+                
+                <h4 style="margin-top: 20px;">Items:</h4>
+                ${lastOrder.items.map(item => `
+                    <div class="checkout-item-details">
+                        <p style="margin: 0;"><strong>${item.name}</strong> (x${item.quantity})</p>
+                        <p style="margin: 0; font-size: 0.9em;">Price: £${(item.price * item.quantity).toFixed(2)}</p>
+                    </div>
+                `).join('')}
+                
+                <h3 style="margin-top: 20px; border-top: 1px solid #ccc; padding-top: 10px;">
+                    Total to pay: <span style="color: #28a745;">${lastOrder.totalSOL} SOL</span>
+                </h3>
+            `;
+            
+            // NOTA: Qui dovresti anche visualizzare l'indirizzo SOL a cui l'utente deve inviare
+            // Per ora, lo spazio per l'indirizzo di pagamento è omesso per mantenere il codice pulito,
+            // ma in una vera applicazione, dovrebbe essere qui.
+        }
 
-            toggleCart(); // Chiude il modale del carrello
-            
-            // Nascondi lo shop e mostra il checkout
-            shopState.classList.remove('visible');
-            // Attendiamo l'animazione di uscita (se presente)
-            setTimeout(() => {
-                shopState.style.display = 'none';
+        // **FUNZIONE AGGIUSTATA**: Resetta lo stato e torna al negozio
+        function finalizeOrder() {
+            cart = []; // Svuota il carrello dopo aver completato l'ordine
+            updateCartCount();
+            lastOrder = null;
+            document.getElementById('solanaAddress').value = ''; // Pulisce l'indirizzo
+            showShop(); // Torna allo stato del negozio
+        }
 
-                // Qui riempi il contenuto del riepilogo del checkout
-                renderCheckoutSummary(); 
+        // --- INIZIALIZZAZIONE ---
 
-                checkoutState.style.display = 'flex'; // Usiamo flex per centrare il container
-                checkoutState.classList.add('visible');
-                document.title = 'Checkout';
-                window.scrollTo(0, 0);
-            }, 500);
-        }
+        // Attiva il gestore click per il "Secret Spot" solo se lo stato globale lo consente
+        if (secretAreaActive) {
+            secretSpot.addEventListener('click', showShop);
+        } else {
+            // Se non attivo di default, disabilita subito il "Buy Now"
+            executeGlobalShutdown();
+        }
+        
+        // Imposta l'azione per i pulsanti "Buy Now" della Cat Mask
+        window.tryToEnterShop = tryToEnterShop;
 
+        // Esegui il controllo dello stato globale all'avvio
+        checkGlobalStatus();
+        // Controlla lo stato ogni 30 secondi (per catturare il shutdown tempestivamente)
+        setInterval(checkGlobalStatus, 30000); 
 
-        function finalizeOrder() {
-            cart = []; // Svuota il carrello
-            updateCartCount();
-            showShop(); // Torna alla pagina del negozio
-        }
-
-        
-        window.onload = () => {
-            checkGlobalStatus();
-            // Inizialmente, lo scorrimento è permesso (Cat Mask)
-            if (secretAreaActive) {
-                secretSpot.addEventListener('click', showShop);
-            } else {
-                // Se per qualche motivo lo stato è già inattivo all'avvio
-                executeGlobalShutdown();
-            }
-
-            // Gestione della chiusura modale con ESC
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && cartModal.style.display === 'flex') {
-                    toggleCart();
-                }
-            });
-        }
-    </script>
+    </script>
 </body>
 </html>
