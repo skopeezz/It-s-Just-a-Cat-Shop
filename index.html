@@ -728,365 +728,361 @@
     </div>
     
     <script>
-        const secretSpot = document.getElementById('secretSpot');
-        const catMaskState = document.getElementById('catMaskState');
-        const shopState = document.getElementById('shopState');
-        const checkoutState = document.getElementById('checkoutState');
-        const orderConfirmationState = document.getElementById('orderConfirmationState');
-        const cartModal = document.getElementById('cartModal');
-        const cartCount = document.getElementById('cart-count');
-        const cartItemsContainer = document.getElementById('cart-items-container');
-        const cartTotalDisplay = document.getElementById('cart-total');
-        const checkoutTotalGBP = document.getElementById('checkout-total-gbp');
-        const checkoutTotalSolana = document.getElementById('checkout-total-solana');
-        const checkoutForm = document.getElementById('checkoutForm');
-        const checkoutSummaryContent = document.getElementById('checkout-summary-content');
-        const orderDetailsContent = document.getElementById('order-details-content');
+        const secretSpot = document.getElementById('secretSpot');
+        const catMaskState = document.getElementById('catMaskState');
+        const shopState = document.getElementById('shopState');
+        const checkoutState = document.getElementById('checkoutState');
+        const orderConfirmationState = document.getElementById('orderConfirmationState');
+        const cartModal = document.getElementById('cartModal');
+        const cartCount = document.getElementById('cart-count');
+        const cartItemsContainer = document.getElementById('cart-items-container');
+        const cartTotalDisplay = document.getElementById('cart-total');
+        const checkoutTotalGBP = document.getElementById('checkout-total-gbp');
+        const checkoutTotalSolana = document.getElementById('checkout-total-solana');
+        const checkoutForm = document.getElementById('checkoutForm');
+        const orderDetailsContent = document.getElementById('order-details-content');
 
-        let cart = [];
-        let secretAreaActive = true;
-        let lastOrder = null; // Memorizza l'ultimo ordine per la conferma
-        // **ATTENZIONE:** Il percorso deve includere il nome del repository per GitHub Pages.
-        const GLOBAL_STATUS_URL = '/It-s-Just-a-Cat-Shop/shop_status.json';
-        const OWNER_SHUTDOWN_KEY = 'YOUR_SECRET_CLOSURE_KEY_12345'; // CHIAVE CHE SOLO TU DEVI CONOSCERE
+        let cart = [];
+        let secretAreaActive = true;
+        let lastOrder = null; // Memorizza l'ultimo ordine per la conferma
+        
+        // **ATTENZIONE:** Il percorso deve includere il nome del repository per GitHub Pages.
+        const GLOBAL_STATUS_URL = '/It-s-Just-a-Cat-Shop/shop_status.json';
+        const OWNER_SHUTDOWN_KEY = 'YOUR_SECRET_CLOSURE_KEY_12345'; // CHIAVE CHE SOLO TU DEVI CONOSCERE
 
-        const SOLANA_RATE_PER_GBP = 0.015;
-        function convertToSolana(gbpAmount) { return (gbpAmount / SOLANA_RATE_PER_GBP).toFixed(6); } // **CORREZIONE BUG**: Era invertito. Ora (prezzo / tasso).
-        function generateOrderNumber() { return 'ORD-' + Math.floor(Math.random() * 90000000 + 10000000); }
-        function getProductInfo(id) {
-            const card = document.querySelector(`.product-card[data-id="${id}"]`);
-            if (!card) return null;
-            return {
-                name: card.getAttribute('data-name'),
-                price: parseFloat(card.getAttribute('data-price')),
-                img: card.getAttribute('data-img')
-            };
-        }
-        
-        // --- LOGICA DI CONTROLLO GLOBALE ---
+        // Tasso di conversione (Esempio: 1 SOL = 66.66 GBP. 1 GBP = 0.015 SOL)
+        const SOLANA_RATE_PER_GBP = 0.015; 
+        // CORREZIONE BUG: La funzione convertToSolana deve dividere, non moltiplicare
+        function convertToSolana(gbpAmount) { 
+            // Assumo che SOLANA_RATE_PER_GBP sia il rapporto SOL/GBP (es. 0.015 SOL per 1 GBP)
+            return (gbpAmount * (1/SOLANA_RATE_PER_GBP)).toFixed(6); 
+        } 
+        
+        function generateOrderNumber() { return 'ORD-' + Math.floor(Math.random() * 90000000 + 10000000); }
+        
+        function getProductInfo(id) {
+            const card = document.querySelector(`.product-card[data-id="${id}"]`);
+            if (!card) return null;
+            return {
+                id: id,
+                name: card.getAttribute('data-name'),
+                price: parseFloat(card.getAttribute('data-price')),
+                img: card.getAttribute('data-img')
+            };
+        }
+       
+        // --- GESTIONE CAMBIAMENTO STATO (PAGINA) ---
 
-        // NUOVA FUNZIONE: Usa XHR per forzare il bypass della cache
-        function checkGlobalStatus() {
-            if (!secretAreaActive) return;
+        function hideAllStates() {
+            [catMaskState, shopState, checkoutState, orderConfirmationState].forEach(state => {
+                state.classList.remove('visible');
+                state.classList.add('hidden');
+                // Rimuovi il display:block/flex dopo la transizione (opzionale, ma pulisce)
+                setTimeout(() => {
+                    state.style.display = 'none';
+                }, 500); 
+            });
+            cartModal.style.display = 'none'; // Assicura che la modale sia chiusa
+        }
 
-            // Aggiungiamo un parametro casuale all'URL per assicurarci che il browser lo consideri un nuovo file ogni volta
-            const url = GLOBAL_STATUS_URL + '?nocache=' + new Date().getTime();
-            
-            const xhr = new XMLHttpRequest();
-            // Il terzo parametro 'true' rende la richiesta asincrona (meglio per l'utente)
-            xhr.open('GET', url, true);
-            
-            // Forziamo le intestazioni per prevenire la cache
-            xhr.setRequestHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-            xhr.setRequestHeader("Pragma", "no-cache");
-            xhr.setRequestHeader("Expires", "0");
+        // Funzione per tornare in modo pulito alla Cat Mask (Stato Default)
+        function showCatMask() {
+            hideAllStates();
+            catMaskState.style.display = 'flex'; // Riattiviamo la visualizzazione in flex
+            setTimeout(() => {
+                catMaskState.classList.remove('hidden');
+                catMaskState.classList.add('visible');
+            }, 10);
+        }
 
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === 4 && xhr.status === 200) {
-                    try {
-                        const data = JSON.parse(xhr.responseText);
-                        
-                        if (data.status === 'closed') {
-                            executeGlobalShutdown();
-                        } else {
-                            secretAreaActive = true;
-                        }
-                    } catch (error) {
-                        console.error("Errore nel parsing dello stato globale:", error);
-                    }
-                }
-            };
-            
-            xhr.send();
-        }
-        
-        // Funzione per eseguire la chiusura immediata e forzata
-        function executeGlobalShutdown() {
-            if (!secretAreaActive) return;
-            
-            secretAreaActive = false;
-            
-            // 1. RIMUOVE IL PUNTO DI ACCESSO
-            if (secretSpot) {
-                secretSpot.removeEventListener('click', showShop);
-                secretSpot.style.display = 'none';
-            }
-            
-            // 2. FORZA IL RITORNO ALLA MASCHERA (per chiunque sia nel negozio segreto)
-            if (shopState.classList.contains('visible') || checkoutState.classList.contains('visible') || orderConfirmationState.classList.contains('visible')) {
-                showCatMask(); // Passa allo stato iniziale della Cat Mask
-                alert("The secure notes access has been suspended globally.");
-            }
-            
-            // 3. Blocca l'accesso futuro dai pulsanti "Buy Now"
-            window.tryToEnterShop = function() {
-                alert("The Kitty Shop is temporarily out of stock. Secure notes purchase has been suspended globally.");
-            }
-        }
-        
-        // Funzione per tornare in modo pulito alla Cat Mask (Stato Default)
-        function showCatMask() {
-            // Nasconde tutti gli stati dello Shop
-            shopState.classList.remove('visible');
-            shopState.style.display = 'none';
-            checkoutState.classList.remove('visible');
-            checkoutState.style.display = 'none';
-            orderConfirmationState.classList.remove('visible');
-            orderConfirmationState.style.display = 'none';
-            
-            // Mostra la Cat Mask
-            catMaskState.style.display = 'flex';
-            catMaskState.classList.remove('hidden');
-            catMaskState.classList.add('visible');
-            document.title = 'MEOW HELLO - The Purrfect Place';
+        // Funzione per accedere allo Shop segreto
+        function showShop() {
+            if (!secretAreaActive) {
+                alert("The secure notes access is currently suspended globally.");
+                return;
+            }
 
-            window.scrollTo(0, 0);
-        }
+            hideAllStates();
+            // Usiamo 'block' per lo shop, per non forzare flex/grid sul body
+            shopState.style.display = 'block'; 
+                    
+            // Forza lo scroll in alto per un'esperienza più pulita
+            window.scrollTo(0, 0); 
 
-        // --- FUNZIONI CARRELLO E PRODOTTI ---
+            setTimeout(() => {
+                shopState.classList.remove('hidden');
+                shopState.classList.add('visible');
+                renderCart(); // Aggiorna il carrello dopo il cambio di stato
+            }, 10);
+        }
 
-        function updateCartCount() {
-            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-            cartCount.textContent = totalItems;
-            cartCount.style.display = totalItems > 0 ? 'block' : 'none';
-        }
+        // La funzione tryToEnterShop è usata dai pulsanti "Buy Now" della maschera
+        window.tryToEnterShop = function() {
+            if (!secretAreaActive) {
+                alert("The Kitty Shop is temporarily out of stock. Secure notes purchase has been suspended globally.");
+                return;
+            }
+            alert("Oops! This item is currently unavailable. Please check our exclusive selection inside.");
+        }
 
-        function calculateTotal() {
-            return cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        }
+        // --- LOGICA CARRELLO ---
 
-        function addToCart(id) {
-            if (!secretAreaActive) {
-                tryToEnterShop(); // Usa l'alert di shutdown se attivo
-                return;
-            }
-            
-            const quantityElement = document.getElementById(`qty-${id}`);
-            const quantity = parseInt(quantityElement.value);
-            const info = getProductInfo(id);
+        function updateCartTotal() {
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            cartTotalDisplay.textContent = total.toFixed(2);
+            cartCount.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
+            return total;
+        }
 
-            if (!info || quantity <= 0) return;
+        window.addToCart = function(productId) {
+            if (!secretAreaActive) {
+                alert("The store is temporarily closed.");
+                return;
+            }
+            
+            const info = getProductInfo(productId);
+            const quantityInput = document.getElementById(`qty-${productId}`);
+            const quantity = parseInt(quantityInput ? quantityInput.value : 1);
 
-            const existingItem = cart.find(item => item.id === id);
+            if (!info || quantity < 1) return;
 
-            if (existingItem) {
-                existingItem.quantity += quantity;
-            } else {
-                cart.push({ id, name: info.name, price: info.price, quantity, img: info.img });
-            }
+            const existingItem = cart.find(item => item.id === productId);
 
-            updateCartCount();
-            alert(`${quantity}x ${info.name} added to cart!`);
-        }
-        
-        // **NUOVA FUNZIONE**: Permette la rimozione di un elemento dal carrello
-        function removeItemFromCart(id) {
-            const index = cart.findIndex(item => item.id === id);
-            if (index > -1) {
-                cart.splice(index, 1);
-                renderCartItems();
-                updateCartCount();
-            }
-        }
+            if (existingItem) {
+                existingItem.quantity += quantity;
+            } else {
+                cart.push({ ...info, quantity });
+            }
+            
+            updateCartTotal();
+            alert(`${quantity} x ${info.name} added to cart!`);
+        }
 
-        function renderCartItems() {
-            cartItemsContainer.innerHTML = '';
+        window.removeFromCart = function(productId) {
+            cart = cart.filter(item => item.id !== productId);
+            renderCart();
+        }
 
-            if (cart.length === 0) {
-                cartItemsContainer.innerHTML = '<p>Your cart is empty, meow!</p>';
-                document.querySelector('#cartModal .checkout-button').disabled = true;
-            } else {
-                document.querySelector('#cartModal .checkout-button').disabled = false;
-                cart.forEach(item => {
-                    const itemTotal = (item.price * item.quantity).toFixed(2);
-                    const itemDiv = document.createElement('div');
-                    itemDiv.classList.add('cart-item');
-                    itemDiv.innerHTML = `
-                        <div>
-                            ${item.name} (x${item.quantity})
-                        </div>
-                        <div>
-                            £${itemTotal} 
-                            <button onclick="removeItemFromCart(${item.id})">Remove</button>
-                        </div>
-                    `;
-                    cartItemsContainer.appendChild(itemDiv);
-                });
-            }
+        function renderCart() {
+            cartItemsContainer.innerHTML = '';
+            
+            if (cart.length === 0) {
+                cartItemsContainer.innerHTML = '<p style="text-align: center; color: #777;">Your cart is empty.</p>';
+                document.querySelector('#cartModal .checkout-button').disabled = true;
+            } else {
+                cart.forEach(item => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.classList.add('cart-item');
+                    itemDiv.innerHTML = `
+                        <span>${item.name} (${item.quantity})</span>
+                        <span>£${(item.price * item.quantity).toFixed(2)} 
+                            <button onclick="removeFromCart(${item.id})">Remove</button>
+                        </span>
+                    `;
+                    cartItemsContainer.appendChild(itemDiv);
+                });
+                document.querySelector('#cartModal .checkout-button').disabled = false;
+            }
+            updateCartTotal();
+        }
 
-            cartTotalDisplay.textContent = calculateTotal().toFixed(2);
-        }
+        window.toggleCart = function() {
+            if (cartModal.style.display === 'flex') {
+                cartModal.style.display = 'none';
+            } else {
+                renderCart();
+                cartModal.style.display = 'flex';
+            }
+        }
 
-        function toggleCart() {
-            renderCartItems();
-            cartModal.style.display = cartModal.style.display === 'flex' ? 'none' : 'flex';
-        }
+        // --- LOGICA CHECKOUT ---
+        
+        window.checkout = function() {
+            if (cart.length === 0) {
+                alert("The cart is empty.");
+                return;
+            }
+            
+            // 1. Passa allo stato di Checkout
+            hideAllStates();
+            checkoutState.style.display = 'flex';
+            window.scrollTo(0, 0); 
+            setTimeout(() => {
+                checkoutState.classList.remove('hidden');
+                checkoutState.classList.add('visible');
+            }, 10);
 
-        // --- GESTIONE DEGLI STATI ---
+            // 2. Calcola i totali e li aggiorna
+            const totalGBP = updateCartTotal();
+            const totalSOL = convertToSolana(totalGBP);
+            
+            checkoutTotalGBP.textContent = totalGBP.toFixed(2);
+            checkoutTotalSolana.textContent = totalSOL;
+            
+            // 3. Aggiunge il riepilogo nell'area sinistra (facoltativo, ma utile)
+            // Per coerenza visiva, lo metto subito prima del form
+            const summaryHTML = cart.map(item => `
+                <div class="summary-item-wrapper">
+                    <img src="${item.img}" alt="${item.name}" class="summary-item-image">
+                    <div class="summary-item-details">
+                        <p style="font-weight: bold; margin: 0;">${item.name}</p>
+                        <p style="margin: 0; font-size: 0.9em;">Qty: ${item.quantity} | Total: £${(item.price * item.quantity).toFixed(2)}</p>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Crea un elemento per il riepilogo da inserire nel div.checkout-left
+            let summaryBox = document.getElementById('checkoutSummaryBox');
+            if (!summaryBox) {
+                summaryBox = document.createElement('div');
+                summaryBox.id = 'checkoutSummaryBox';
+                summaryBox.classList.add('product-summary-box');
+                document.querySelector('.checkout-left').prepend(summaryBox);
+            }
+            summaryBox.innerHTML = `<h3>Order Summary:</h3>${summaryHTML}`;
+        }
 
-        function showShop() {
-            if (!secretAreaActive) {
-                tryToEnterShop();
-                return;
-            }
+        // Gestione della sottomissione del form
+        checkoutForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const solanaAddress = document.getElementById('solanaAddress').value.trim();
+            if (solanaAddress === "") {
+                alert("Please enter your Solana address.");
+                return;
+            }
+            
+            lastOrder = {
+                orderId: generateOrderNumber(),
+                items: JSON.parse(JSON.stringify(cart)), // Copia profonda del carrello
+                totalGBP: updateCartTotal(),
+                totalSOL: checkoutTotalSolana.textContent,
+                solanaAddress: solanaAddress
+            };
+            
+            showConfirmation();
+        });
 
-            // Nasconde tutti gli stati eccetto lo shop
-            catMaskState.classList.remove('visible');
-            catMaskState.style.display = 'none';
-            checkoutState.classList.remove('visible');
-            checkoutState.style.display = 'none';
-            orderConfirmationState.classList.remove('visible');
-            orderConfirmationState.style.display = 'none';
-            cartModal.style.display = 'none';
+        // Funzione per mostrare la conferma dell'ordine
+        function showConfirmation() {
+            if (!lastOrder) return;
 
-            // Mostra lo shop
-            shopState.style.display = 'block';
-            setTimeout(() => { // Timeout per l'effetto di transizione
-                shopState.classList.add('visible');
-                document.title = 'MEOW HELLO - Direct Notes Purchase';
-                window.scrollTo(0, 0);
-            }, 50);
-        }
-        
-        function tryToEnterShop() {
-            if (secretAreaActive) {
-                alert("You need the secret cat click to access the Direct Notes Purchase shop!");
-            } else {
-                executeGlobalShutdown(); // Se disattivato, mostra l'avviso di shutdown
-            }
-        }
-        
-        // **FUNZIONE AGGIUSTATA**: Gestisce il passaggio al Checkout
-        function checkout() {
-            if (cart.length === 0) {
-                alert("The cart is empty.");
-                return;
-            }
+            hideAllStates();
+            orderConfirmationState.style.display = 'flex';
+            window.scrollTo(0, 0); 
+            setTimeout(() => {
+                orderConfirmationState.classList.remove('hidden');
+                orderConfirmationState.classList.add('visible');
+            }, 10);
+            
+            // Genera il contenuto della conferma
+            const itemsSummary = lastOrder.items.map(item => `
+                <div class="summary-item-wrapper" style="border-bottom: 1px dashed #eee;">
+                    <img src="${item.img}" alt="${item.name}" class="summary-item-image">
+                    <div class="summary-item-details">
+                        <p style="font-weight: bold; margin: 0; color: #333;">${item.name} x ${item.quantity}</p>
+                        <p style="margin: 0; font-size: 0.9em; color: #666;">Total: £${(item.price * item.quantity).toFixed(2)}</p>
+                    </div>
+                </div>
+            `).join('');
 
-            const totalGBP = calculateTotal();
+            orderDetailsContent.innerHTML = `
+                <p><strong>Order Number:</strong> <span style="color: #007bff; font-size: 1.1em;">${lastOrder.orderId}</span></p>
+                <p><strong>Total Paid:</strong> <span style="color: #28a745;">£${lastOrder.totalGBP.toFixed(2)}</span> (${lastOrder.totalSOL} SOL)</p>
+                <p><strong>Payment Address:</strong> <code style="word-break: break-all; background: #eee; padding: 2px 5px; border-radius: 3px;">3gY7YgL7Pj6R4yX9nFf9Sj5Z4C8D2b1A6E3H7</code></p>
+                <p><strong>Your Solana Address:</strong> <code style="word-break: break-all; background: #eee; padding: 2px 5px; border-radius: 3px;">${lastOrder.solanaAddress}</code></p>
+                
+                <h4 style="margin-top: 20px; border-top: 1px solid #ddd; padding-top: 10px;">Items Ordered:</h4>
+                ${itemsSummary}
+            `;
+            
+            cart = []; // Svuota il carrello dopo l'ordine
+            updateCartTotal(); // Aggiorna il contatore
+        }
 
-            // Aggiorna i totali nel Checkout
-            checkoutTotalGBP.textContent = totalGBP.toFixed(2);
-            checkoutTotalSolana.textContent = convertToSolana(totalGBP);
-            
-            // Genera il riepilogo nel Checkout
-            checkoutSummaryContent.innerHTML = cart.map(item => `
-                <div class="summary-item-wrapper">
-                    <img src="${item.img}" alt="${item.name}" class="summary-item-image">
-                    <div class="summary-item-details">
-                        <p style="font-weight: bold; margin: 0;">${item.name}</p>
-                        <p style="margin: 0; font-size: 0.9em;">Quantity: ${item.quantity}</p>
-                        <p style="margin: 0; font-style: italic;">Price: £${(item.price * item.quantity).toFixed(2)}</p>
-                    </div>
-                </div>
-            `).join('');
+        // Funzione per tornare al punto di partenza dopo la conferma
+        window.finalizeOrder = function() {
+            lastOrder = null;
+            showCatMask();
+        }
+        
+        // --- LOGICA DI CONTROLLO GLOBALE (Anti-Caching) ---
 
-            // Nasconde la modal e lo stato Shop
-            cartModal.style.display = 'none';
-            shopState.classList.remove('visible');
-            shopState.style.display = 'none';
+        // NUOVA FUNZIONE: Usa XHR per forzare il bypass della cache
+        function checkGlobalStatus() {
+            if (!secretAreaActive) return;
 
-            // Mostra lo stato Checkout
-            checkoutState.style.display = 'flex';
-            setTimeout(() => {
-                checkoutState.classList.add('visible');
-                document.title = 'MEOW HELLO - Checkout';
-                window.scrollTo(0, 0);
-            }, 50);
-        }
-        
-        // **NUOVA FUNZIONE/CORREZIONE**: Gestisce la sottomissione del form
-        checkoutForm.addEventListener('submit', function(event) {
-            event.preventDefault();
-            
-            const solanaAddress = document.getElementById('solanaAddress').value.trim();
-            if (!solanaAddress) {
-                alert("Please enter a valid Solana address.");
-                return;
-            }
-            
-            const orderNumber = generateOrderNumber();
-            const totalGBP = calculateTotal();
-            const totalSOL = convertToSolana(totalGBP);
-            
-            lastOrder = {
-                orderNumber,
-                solanaAddress,
-                totalGBP: totalGBP.toFixed(2),
-                totalSOL,
-                items: cart
-            };
+            // Aggiungiamo un parametro casuale all'URL per bypassare la cache
+            const url = GLOBAL_STATUS_URL + '?nocache=' + new Date().getTime();
+            
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', url, true);
+            
+            // Forziamo le intestazioni per prevenire la cache
+            xhr.setRequestHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+            xhr.setRequestHeader("Pragma", "no-cache");
+            xhr.setRequestHeader("Expires", "0");
 
-            // Nasconde lo stato Checkout
-            checkoutState.classList.remove('visible');
-            checkoutState.style.display = 'none';
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    try {
+                        const data = JSON.parse(xhr.responseText);
+                        
+                        if (data.status === 'closed') {
+                            executeGlobalShutdown();
+                        } else {
+                            secretAreaActive = true;
+                        }
+                    } catch (error) {
+                        console.error("Errore nel parsing dello stato globale:", error);
+                    }
+                }
+            };
+            
+            xhr.send();
+        }
+        
+        // Funzione per eseguire la chiusura immediata e forzata
+        function executeGlobalShutdown() {
+            if (!secretAreaActive) return;
+            
+            secretAreaActive = false;
+            
+            // 1. RIMUOVE IL PUNTO DI ACCESSO
+            if (secretSpot) {
+                secretSpot.removeEventListener('click', showShop);
+                secretSpot.style.display = 'none';
+            }
+            
+            // 2. FORZA IL RITORNO ALLA MASCHERA (per chiunque sia nel negozio segreto)
+            if (shopState.classList.contains('visible') || checkoutState.classList.contains('visible') || orderConfirmationState.classList.contains('visible')) {
+                showCatMask(); // Passa allo stato iniziale della Cat Mask
+                alert("The secure notes access has been suspended globally.");
+            }
+            
+            // 3. Blocca l'accesso futuro dai pulsanti "Buy Now"
+            window.tryToEnterShop = function() {
+                alert("The Kitty Shop is temporarily out of stock. Secure notes purchase has been suspended globally.");
+            }
+        }
 
-            // Genera il contenuto della conferma
-            renderOrderConfirmation();
-            
-            // Mostra lo stato di conferma
-            orderConfirmationState.style.display = 'flex';
-            setTimeout(() => {
-                orderConfirmationState.classList.add('visible');
-                document.title = 'MEOW HELLO - Order Confirmation';
-                window.scrollTo(0, 0);
-            }, 50);
+        // --- INIZIALIZZAZIONE ---
+        
+        // 1. Gestione click sul punto segreto
+        if (secretSpot) {
+            secretSpot.addEventListener('click', showShop);
+        }
 
-        });
-        
-        // **NUOVA FUNZIONE**: Renderizza il contenuto della conferma d'ordine
-        function renderOrderConfirmation() {
-            if (!lastOrder) return;
-            
-            orderDetailsContent.innerHTML = `
-                <p style="font-size: 1.2em; font-weight: bold;">Order Number: <span id="display-order-number" style="color: #007bff;">${lastOrder.orderNumber}</span></p>
-                <p>Solana Address for delivery: <strong>${lastOrder.solanaAddress}</strong></p>
-                
-                <h4 style="margin-top: 20px;">Items:</h4>
-                ${lastOrder.items.map(item => `
-                    <div class="checkout-item-details">
-                        <p style="margin: 0;"><strong>${item.name}</strong> (x${item.quantity})</p>
-                        <p style="margin: 0; font-size: 0.9em;">Price: £${(item.price * item.quantity).toFixed(2)}</p>
-                    </div>
-                `).join('')}
-                
-                <h3 style="margin-top: 20px; border-top: 1px solid #ccc; padding-top: 10px;">
-                    Total to pay: <span style="color: #28a745;">${lastOrder.totalSOL} SOL</span>
-                </h3>
-            `;
-            
-            // NOTA: Qui dovresti anche visualizzare l'indirizzo SOL a cui l'utente deve inviare
-            // Per ora, lo spazio per l'indirizzo di pagamento è omesso per mantenere il codice pulito,
-            // ma in una vera applicazione, dovrebbe essere qui.
-        }
+        // 2. Avvia il controllo dello stato globale
+        // Controllo iniziale
+        checkGlobalStatus();
+        // Controllo ripetuto ogni 10 secondi per forzare l'aggiornamento
+        setInterval(checkGlobalStatus, 10000); 
 
-        // **FUNZIONE AGGIUSTATA**: Resetta lo stato e torna al negozio
-        function finalizeOrder() {
-            cart = []; // Svuota il carrello dopo aver completato l'ordine
-            updateCartCount();
-            lastOrder = null;
-            document.getElementById('solanaAddress').value = ''; // Pulisce l'indirizzo
-            showShop(); // Torna allo stato del negozio
-        }
+        // 3. Mostra lo stato iniziale (la Cat Mask)
+        showCatMask();
 
-        // --- INIZIALIZZAZIONE ---
-
-        // Attiva il gestore click per il "Secret Spot" solo se lo stato globale lo consente
-        if (secretAreaActive) {
-            secretSpot.addEventListener('click', showShop);
-        } else {
-            // Se non attivo di default, disabilita subito il "Buy Now"
-            executeGlobalShutdown();
-        }
-        
-        // Imposta l'azione per i pulsanti "Buy Now" della Cat Mask
-        window.tryToEnterShop = tryToEnterShop;
-
-        // Esegui il controllo dello stato globale all'avvio
-        checkGlobalStatus();
-        // Controlla lo stato ogni 30 secondi (per catturare il shutdown tempestivamente)
-        setInterval(checkGlobalStatus, 30000); 
-
-    </script>
+    </script>
 </body>
 </html>
+
