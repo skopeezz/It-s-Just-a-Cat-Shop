@@ -10,16 +10,28 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Chewy&display=swap" rel="stylesheet">
     
     <style>
-        /* STILI (RIMANGONO UGUALI) */
+        /* ==========================================================
+           1. CORREZIONE: Blocco dello Scorrimento Eccessivo
+           (Applicata a html e body)
+           ========================================================== */
+        html {
+            /* Assicura che l'elemento principale prenda tutta l'altezza */
+            height: 100%; 
+        }
+
         body {
             font-family: 'Poppins', sans-serif;
             margin: 0;
             transition: background-color 0.3s ease;
+            /* **MODIFICA CHIAVE:** Garantisce che l'altezza minima sia l'altezza della finestra visibile (viewport) */
+            min-height: 100vh; 
         }
         
+        /* Assicuriamo che gli stati coprano il 100% dell'altezza minima definita nel body */
         #catMaskState, #shopState, #checkoutState, #orderConfirmationState {
             width: 100%;
-            min-height: 100vh;
+            /* min-height: 100vh; Rimosso qui, ora gestito dal body */
+            min-height: 100%; /* Si adatta all'altezza minima del body */
             opacity: 0;
             transition: opacity 0.5s ease-in-out;
             display: none;
@@ -41,9 +53,15 @@
         
         .visible {
             opacity: 1 !important;
-            display: block !important;
+            /* Per gli stati shop/checkout, usiamo flex/block, quindi li lasciamo così, 
+               ma aggiungiamo display: flex per il catMaskState */
+            display: block !important; 
         }
         
+        #catMaskState.visible {
+            display: flex !important;
+        }
+
         #catMaskState.hidden {
             opacity: 0 !important;
             pointer-events: none;
@@ -139,10 +157,11 @@
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
         }
         
+        /* *** CORREZIONE IMMAGINI PRODOTTI (Cat Mask) *** */
         .mask-product-card img {
             width: 100%;
-            height: 120px;
-            object-fit: cover;
+            height: 180px; /* Aumentata l'altezza per una migliore visibilità */
+            object-fit: cover; /* **MODIFICA CHIAVE:** Assicura che l'immagine riempia lo spazio */
             border-radius: 10px;
             margin-bottom: 10px;
         }
@@ -236,10 +255,11 @@
             border: 1px solid #ddd;
         }
 
+        /* *** CORREZIONE IMMAGINI PRODOTTI (Negozio) *** */
         .product-image {
             width: 100%;
-            height: 180px;
-            object-fit: cover;
+            height: 220px; /* Aumentata l'altezza per una migliore visibilità */
+            object-fit: cover; /* **MODIFICA CHIAVE:** Assicura che l'immagine riempia lo spazio */
             display: block;
         }
         
@@ -285,7 +305,7 @@
             background-color: #0056b3;
         }
 
-        /* MODAL STYLES */
+        /* MODAL STYLES (rimangono invariati) */
         #cartModal {
             position: fixed;
             top: 0;
@@ -348,14 +368,17 @@
             overflow: hidden;
         }
 
+        /* *** CORREZIONE LAYOUT CHECKOUT (50%/50%) *** */
         .checkout-left {
-            flex: 2;
+            /* **MODIFICA CHIAVE:** Impostato a 1 per un rapporto 1:1, non 2:1 */
+            flex: 1; 
             padding: 30px;
             background-color: #f8f9fa;
         }
 
         .checkout-right {
-            flex: 1;
+            /* **MODIFICA CHIAVE:** Impostato a 1 per un rapporto 1:1, non 1:2 */
+            flex: 1; 
             background-image: url('https://i.imgur.com/SyCQXvm.gif');
             background-size: cover;
             background-position: center;
@@ -416,7 +439,8 @@
                 flex-direction: column;
                 margin: 0 10px;
             }
-            .checkout-right {
+            /* Su schermi piccoli la colonna destra deve avere un'altezza definita */
+            .checkout-right { 
                 height: 200px;
             }
             #catMaskState-title h1 {
@@ -870,124 +894,114 @@
             alert(`Added ${quantity} x ${info.name} to cart.`);
         }
 
-        function checkout() {
-            if (cart.length === 0) {
-                alert("Your cart is empty. Add items before checking out.");
-                return;
-            }
-
-            // Nasconde il carrello modale e lo shop
-            cartModal.style.display = 'none';
-            shopState.classList.remove('visible');
-            shopState.style.display = 'none';
-            
-            // Mostra lo stato di checkout
-            checkoutState.style.display = 'flex';
-            checkoutState.classList.add('visible');
-
-            renderCheckoutSummary();
-            window.scrollTo(0, 0);
-        }
-
         function renderCheckoutSummary() {
             checkoutSummaryContent.innerHTML = '';
             let total = 0;
+            let productHtml = '<h3>Items:</h3><div style="margin-bottom: 20px;">';
+            
+            if (cart.length === 0) {
+                checkoutSummaryContent.innerHTML = '<p style="text-align: center; color: #777;">Your cart is empty. Please return to the shop.</p><button class="submit-order-button" onclick="showShop()">Go to Shop</button>';
+                return;
+            }
 
             cart.forEach(item => {
                 const subtotal = item.price * item.quantity;
                 total += subtotal;
 
-                const itemDiv = document.createElement('div');
-                itemDiv.className = 'checkout-item';
-                
-                // --- FIX CRITICO: Usa l'URL immagine corretto dal carrello ---
-                itemDiv.innerHTML = `
-                    <img src="${item.img}" alt="${item.name}" class="summary-item-image">
-                    <div class="checkout-item-details">
-                        <p style="font-size: 1.1em; font-weight: bold; margin-bottom: 5px;">${item.name} (x${item.quantity})</p>
-                        <p>Price per unit: £${item.price.toFixed(2)}</p>
-                        <p>Subtotal: £${subtotal.toFixed(2)}</p>
+                productHtml += `
+                    <div style="display: flex; gap: 15px; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
+                        <div style="flex-shrink: 0; width: 100px; height: 100px; overflow: hidden; border-radius: 5px;">
+                            <img src="${item.img}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        <div style="flex-grow: 1;">
+                            <h4 style="margin: 0 0 5px 0; color: #333;">${item.name}</h4>
+                            <p style="margin: 0; font-size: 0.9em; color: #555;">Qty: ${item.quantity} x £${item.price.toFixed(2)}</p>
+                            <p style="margin: 5px 0 0 0; font-weight: bold;">Subtotal: £${subtotal.toFixed(2)}</p>
+                        </div>
                     </div>
-                    <hr style="margin: 15px 0;">
                 `;
-                // -------------------------------------------------------------------
-                
-                checkoutSummaryContent.appendChild(itemDiv);
             });
 
-            const solanaAmount = convertToSolana(total);
+            productHtml += '</div>';
+            
+            const totalSolana = convertToSolana(total);
 
-            const finalSummary = document.createElement('div');
-            finalSummary.innerHTML = `
-                <h3 style="text-align: right; margin-top: 10px;">TOTAL: £${total.toFixed(2)}</h3>
-                <div class="solana-display">
-                    Approx. SOL amount: ${solanaAmount} SOL
+            const finalHtml = `
+                ${productHtml}
+                <div class="checkout-item-details">
+                    <p style="display: flex; justify-content: space-between; font-weight: bold;"><span>Total GBP:</span> <span>£${total.toFixed(2)}</span></p>
                 </div>
-                <p style="font-size: 0.9em; color: #777; text-align: center; margin-top: 15px;">
-                    This amount must be paid to the wallet address provided after submitting the order.
-                </p>
-                <button class="submit-order-button" onclick="submitOrder()">Confirm Order and Get Wallet Address</button>
+                
+                <h3 style="margin-top: 20px;">Payment</h3>
+                <div class="solana-display">
+                    Pay: ${totalSolana} SOL
+                </div>
+                
+                <p style="text-align: center; margin-top: 15px; font-size: 0.9em; color: #777;">* Solana rate used: 1 SOL = £${(1 / SOLANA_RATE_PER_GBP).toFixed(2)}</p>
+
+                <button class="submit-order-button" onclick="confirmOrder(${total}, '${totalSolana}')">Confirm Order</button>
+                <button class="submit-order-button" onclick="showShop()" style="margin-top: 10px; background-color: #f0ad4e; color: #333;">Cancel and Go Back</button>
             `;
-            checkoutSummaryContent.appendChild(finalSummary);
+            
+            checkoutSummaryContent.innerHTML = finalHtml;
         }
 
-
-        function submitOrder() {
-            const orderNumber = generateOrderNumber();
-            let total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-            const solanaAmount = convertToSolana(total);
+        function checkout() {
+            if (cart.length === 0) {
+                alert("Il carrello è vuoto. Aggiungi prima un prodotto.");
+                return;
+            }
             
-            // Nasconde lo stato di checkout
+            // Nasconde tutti gli stati eccetto il checkout
+            catMaskState.classList.remove('visible');
+            shopState.classList.remove('visible');
+            cartModal.style.display = 'none';
+            
+            // Mostra lo stato di Checkout
+            checkoutState.style.display = 'flex';
+            checkoutState.classList.add('visible');
+            document.title = 'Order Checkout';
+            
+            renderCheckoutSummary();
+            
+            window.scrollTo(0, 0);
+        }
+
+        function confirmOrder(totalGBP, totalSOL) {
+            const orderNumber = generateOrderNumber();
+            
+            // Nasconde lo stato di Checkout
             checkoutState.classList.remove('visible');
             checkoutState.style.display = 'none';
-
-            // Mostra la conferma
+            
+            // Mostra lo stato di Conferma
             orderConfirmationState.style.display = 'flex';
             orderConfirmationState.classList.add('visible');
-
-            // Popola i dettagli dell'ordine
+            document.title = 'Order Confirmed';
+            
             orderDetailsContent.innerHTML = `
-                <p style="font-size: 1.5em; font-weight: bold; color: #007bff; margin-bottom: 20px;">Order: ${orderNumber}</p>
-                <ul style="list-style: none; padding: 0;">
-                    ${cart.map(item => `
-                        <li style="border-bottom: 1px dashed #eee; padding: 5px 0;">
-                            ${item.name} (x${item.quantity}) - £${(item.price * item.quantity).toFixed(2)}
-                        </li>
-                    `).join('')}
-                </ul>
-                <h3 style="text-align: right; margin-top: 20px;">FINAL TOTAL: £${total.toFixed(2)}</h3>
-                <div class="solana-display" style="margin-top: 15px;">
-                    Send ${solanaAmount} SOL to: 
-                    <br><strong style="font-size: 0.8em; word-break: break-all;">CucXttzB367jLjDBdjEnySrFfgnPg8ByVjUw7LF81DWD</strong>
+                <p><strong>Order Number:</strong> <span style="color: #007bff; font-size: 1.1em;">${orderNumber}</span></p>
+                <p><strong>Total Paid (GBP):</strong> £${totalGBP.toFixed(2)}</p>
+                <div class="solana-display" style="margin-top: 20px;">
+                    <strong>Total Paid (SOL):</strong> ${totalSOL} SOL
                 </div>
+                <p style="margin-top: 15px; color: #555;">Your order details have been secured.</p>
             `;
             
-            // Svuota il carrello dopo l'ordine
+            // Pulisce il carrello dopo la conferma
             cart = [];
             updateCartCount();
             window.scrollTo(0, 0);
         }
 
         function finalizeOrder() {
-            // Torna allo stato iniziale dello Shop
-            orderConfirmationState.classList.remove('visible');
-            orderConfirmationState.style.display = 'none';
-            
-            shopState.style.display = 'block';
-            shopState.classList.add('visible');
-            
-            document.title = 'DIRECT NOTES PURCHASE';
-            window.scrollTo(0, 0);
+            // Reindirizza alla pagina iniziale del negozio (Shop Neutro)
+            showShop(); 
         }
+
+        // Assicuriamoci che lo stato iniziale sia corretto
+        showCatMask();
 
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
