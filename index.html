@@ -774,16 +774,16 @@
 
         if (action && action.toLowerCase() === 'close') {
             isShopOpen = false;
-            alert("Sito chiuso globalmente. Gli utenti vedranno il messaggio di manutenzione.");
+            alert("Blocco Globale ATTIVATO.");
         } else if (action && action.toLowerCase() === 'open') {
             isShopOpen = true;
-            alert("Sito riaperto.");
+            alert("Blocco Globale DISATTIVATO.");
         }
         showCatMask(); 
     }
 
     function tryToEnterSecretArea() {
-        const input = prompt("Accesso all'Area Gestione. Inserisci la password:");
+        const input = prompt("Accesso all'Area Gestione (Blocco Globale). Inserisci la password:");
         
         if (input && input === SECRET_PASSWORD) {
             toggleGlobalShopStatus(); 
@@ -831,14 +831,17 @@
         }, 10);
     }
 
+    // *** MODIFICATO: NON APRE MAI LO SHOP. L'UNICO ACCESSO È SECRET_AREA ***
     window.tryToEnterShop = function() {
         if (!isShopOpen) {
             alert("Attualmente il negozio è chiuso per manutenzione. Ci scusiamo per il disagio.");
             return;
         }
         
-        showShop(); 
+        // Messaggio che blocca SEMPRE l'accesso diretto dai pulsanti Buy Now
+        alert("Oops! This item is currently unavailable. Please check our exclusive selection inside.");
     }
+    // *******************************************************************
 
     function updateCartTotal() {
         const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -1036,7 +1039,7 @@
             return;
         }
         
-        const key = prompt("Enter Closure Key:");
+        const key = prompt("Enter Closure Key (Secret Notes Access):");
         if (key !== OWNER_SHUTDOWN_KEY) {
             alert("Invalid Key. Access Denied.");
             return;
