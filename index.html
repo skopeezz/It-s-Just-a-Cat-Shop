@@ -175,6 +175,16 @@
             font-weight: bold;
         }
 
+        .secret-spot {
+        position: absolute;
+        top: 0px;
+        right: 0px;
+        width: 5px; 
+        height: 5px;
+        cursor: pointer;
+        z-index: 10;
+        opacity: 0; 
+        }
 
         /* --- SHOP MASK (Neutral/Original Look) --- */
         #shopState {
@@ -494,6 +504,7 @@
 
         <div class="cat-image-container">
             <img src="https://images.unsplash.com/photo-1543852786-1cf6624b9987?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Cute Cat Looking" class="cat-hero-image">
+            <div class="secret-spot" id="secretSpot" title="Secret Area"></div>
         </div>
 
         <div id="maskProducts-container">
@@ -698,7 +709,6 @@
         </div>
     </div>
 <script>
-    // --- Variabili e Costanti ---
     const catMaskState = document.getElementById('catMaskState');
     const shopState = document.getElementById('shopState');
     const checkoutState = document.getElementById('checkoutState');
@@ -714,23 +724,20 @@
     const checkoutSummaryContainer = document.getElementById('checkout-summary-container');
     const checkoutSummaryTotal = document.getElementById('checkout-summary-total');
 
-    // ** Rimosso da te, ma necessario se lo vuoi riattivare: **
-    // const secretSpot = document.getElementById('secretSpot'); 
+    const secretSpot = document.getElementById('secretSpot'); 
 
-    // ** Variabili per il Triplo Click (Blocco Globale) **
     const TITLE_ELEMENT = document.getElementById('catMaskState-title');
     const SECRET_PASSWORD = "4r5rg6";
     let clickCount = 0;
     let clickTimeout;
-    let isShopOpen = true; // Stato globale gestito dal Triplo Click
+    let isShopOpen = true; 
 
-    // ** Variabili per l'Area Segreta Originale **
     let cart = [];
-    let secretAreaActive = true; // Stato originale gestito da secretSpot
+    let secretAreaActive = true;
     let lastOrder = null; 
     
     const GLOBAL_STATUS_URL = '/It-s-Just-a-Cat-Shop/shop_status.json';
-    const OWNER_SHUTDOWN_KEY = 'YOUR_SECRET_CLOSURE_KEY_12345'; // Chiave per lo shut down originale (Assicurati che questo sia corretto)
+    const OWNER_SHUTDOWN_KEY = 'YOUR_SECRET_CLOSURE_KEY_12345'; 
 
     const SOLANA_RATE_PER_GBP = 0.015; 
     
@@ -751,8 +758,6 @@
         };
     }
     
-    // --- GESTIONE CAMBIAMENTO STATO (PAGINA) ---
-
     function hideAllStates() {
         [catMaskState, shopState, checkoutState, orderConfirmationState].forEach(state => {
             state.classList.remove('visible');
@@ -763,8 +768,6 @@
         });
         cartModal.style.display = 'none'; 
     }
-
-    // --- Logica di Blocco/Sblocco e Triplo Click (Nuova Funzione) ---
 
     function toggleGlobalShopStatus() {
         const action = prompt(`Il negozio è attualmente: ${isShopOpen ? 'APERTO' : 'CHIUSO'}.\n\nVuoi cambiare lo stato? Digita:\n- 'close' per chiudere\n- 'open' per aprire\n- Annulla per non fare nulla`);
@@ -803,8 +806,6 @@
         }
     });
 
-    // ----------------------------------------------------
-
     function showCatMask() {
         hideAllStates();
         catMaskState.style.display = 'flex'; 
@@ -814,7 +815,6 @@
         }, 10);
     }
 
-    // Funzione per accedere allo Shop (Ripristinato il controllo 'secretAreaActive' sulla funzione showShop)
     function showShop() {
         if (!secretAreaActive) {
             alert("The secure notes access is currently suspended globally.");
@@ -831,19 +831,14 @@
         }, 10);
     }
 
-    // Funzione Pubblica Buy Now (Modificata per controllo isShopOpen)
     window.tryToEnterShop = function() {
         if (!isShopOpen) {
             alert("Attualmente il negozio è chiuso per manutenzione. Ci scusiamo per il disagio.");
             return;
         }
         
-        // Ho lasciato l'alert di debug che avevi tu, ma se vuoi solo entrare, usa showShop()
-        // alert("Oops! This item is currently unavailable. Please check our exclusive selection inside.");
         showShop(); 
     }
-
-    // --- Logica Carrello e Checkout (Invariata) ---
 
     function updateCartTotal() {
         const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -964,8 +959,6 @@
         }, 10);
     }
 
-    // --- GESTIONE ORDINE (Invariata) ---
-
     checkoutForm.addEventListener('submit', function(e) {
         e.preventDefault();
         
@@ -1021,7 +1014,7 @@
                             <p style="margin: 0; font-weight: bold; font-size: 0.9em;">${item.name}</p>
                             <p style="margin: 0; font-size: 0.8em; color: #555;">Qty: ${item.quantity}</p>
                         </div>
-                        <p style="margin: 0; font-weight: bold;">£${item.total}</p>
+                            <p style="margin: 0; font-weight: bold;">£${item.total}</p>
                     </div>
                 `;
             });
@@ -1037,13 +1030,6 @@
         showShop(); 
     }
 
-    // --- FUNZIONALITÀ SEGRETA ORIGINALE (Ripristinata) ---
-    
-    // ** Nota: se non hai più l'elemento HTML con id="secretSpot", questa sezione fallirà. **
-    // Assicurati di riaggiungere l'HTML e il CSS per l'elemento secretSpot, se lo vuoi funzionante.
-
-    // Il codice originale che gestiva lo shutdown è:
-    /*
     secretSpot.addEventListener('click', async function() {
         if (!secretAreaActive) {
             alert("Shop is already closed.");
@@ -1058,18 +1044,10 @@
 
         const confirmClose = confirm("Are you sure you want to shut down the secure access globally?");
         if (confirmClose) {
-            // Qui andava la logica per modificare secretAreaActive o inviare lo stato al server.
-            // Poiché non ho la tua logica server-side, ho ripristinato solo la struttura base.
             secretAreaActive = false;
             alert("Secure notes access temporarily suspended.");
         }
     });
-    */
-
-    // Se l'elemento secretSpot non esiste, commenta o rimuovi l'addEventListener qui sopra
-
-    
-    // --- INIZIALIZZAZIONE ---
 
     window.addEventListener('load', () => {
         showCatMask();
