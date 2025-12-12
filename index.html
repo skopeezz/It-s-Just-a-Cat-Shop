@@ -11,13 +11,17 @@
     
     <style>
         /* ==========================================================
-           1. CORREZIONE: Blocco dello Scorrimento Eccessivo
-           ========================================================== */
+          1. CORREZIONE GLOBALE SCORRIMENTO PC
+             Rimosso overflow-x superfluo sul body e min-height/overflow
+             sugli stati interni.
+          ========================================================== */
         html {
             /* Assicura che l'elemento principale prenda tutta l'altezza */
             height: 100%; 
-            /* **MODIFICA APPLICATA:** Impedisce lo scorrimento orizzontale superfluo */
+            /* Impedisce lo scorrimento orizzontale superfluo */
             overflow-x: hidden; 
+            /* Permette lo scorrimento verticale naturale del documento */
+            overflow-y: auto;
         }
 
         body {
@@ -26,8 +30,7 @@
             transition: background-color 0.3s ease;
             /* Garantisce che l'altezza minima sia l'altezza della finestra visibile (viewport) */
             min-height: 100vh; 
-            /* **MODIFICA APPLICATA:** Impedisce lo scorrimento orizzontale superfluo */
-            overflow-x: hidden; 
+            /* Rimosso overflow-x: hidden dal body per evitare conflitti */
         }
         
         /* Assicuriamo che gli stati coprano il 100% dell'altezza minima definita nel body */
@@ -39,6 +42,8 @@
             display: none;
             box-sizing: border-box;
             z-index: 1;
+            /* **ATTENZIONE:** Rimosso min-height: 100vh e overflow-y: auto da qui,
+               perché lo scorrimento deve essere gestito dal body/html */
         }
 
         #catMaskState {
@@ -161,7 +166,7 @@
         .mask-product-card img {
             width: 100%;
             height: 180px; 
-            /* **MODIFICA APPLICATA:** Object-fit copre il contenitore, eliminando lo spazio bianco */
+            /* Object-fit copre il contenitore, eliminando lo spazio bianco */
             object-fit: cover; 
             border-radius: 10px;
             margin-bottom: 10px;
@@ -260,7 +265,7 @@
         .product-image {
             width: 100%;
             height: 220px; 
-            /* **MODIFICA APPLICATA:** Object-fit copre il contenitore, eliminando lo spazio bianco */
+            /* Object-fit copre il contenitore, eliminando lo spazio bianco */
             object-fit: cover; 
             display: block;
         }
@@ -358,30 +363,37 @@
             padding: 30px 0;
             display: flex;
             justify-content: center;
-            /* **MODIFICA APPLICATA:** Consente lo scorrimento all'interno di questo stato se necessario */
-            overflow-y: auto; 
-            min-height: 100vh; /* Garantisce che si estenda a tutta l'altezza */
+            /* Rimosso overflow-y: auto e min-height: 100vh come correzione scroll */
         }
 
+        /* ==========================================================
+          2. CORREZIONE CHECKOUT PC: Centratura e Divisione
+             Aggiunto margin auto e modificata la flessibilità delle colonne.
+          ========================================================== */
         .checkout-container {
+            /* **MODIFICA CRITICA:** Centra il blocco orizzontalmente sul PC */
+            margin: 20px auto; 
             display: flex;
             max-width: 1000px;
-            width: 100%;
+            /* Utilizziamo il 90% per dare un po' di margine sui lati, specialmente su PC */
+            width: 90%; 
             background: white;
             border-radius: 10px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             overflow: hidden;
         }
 
-        /* *** CORREZIONE LAYOUT CHECKOUT (50%/50%) *** */
+        /* *** NUOVA DIVISIONE LAYOUT CHECKOUT (60% / 40%) *** */
         .checkout-left {
-            flex: 1; /* Rapporto 1:1 */
+            /* 60% della larghezza per il Form/Riepilogo */
+            flex: 3; 
             padding: 30px;
             background-color: #f8f9fa;
         }
 
         .checkout-right {
-            flex: 1; /* Rapporto 1:1 */
+            /* 40% della larghezza per l'Immagine di Sfondo */
+            flex: 2; 
             background-image: url('https://i.imgur.com/SyCQXvm.gif');
             background-size: cover;
             background-position: center;
@@ -392,7 +404,6 @@
             border: 1px solid #ddd;
             background-color: white;
             border-radius: 5px;
-            /* **MODIFICA APPLICATA:** Fornisce uno spazio di respiro e riduce l'altezza per i mobile */
             height: 100%; 
             box-sizing: border-box;
         }
@@ -441,12 +452,14 @@
         }
 
         /* ==========================================================
-           2. CORREZIONE RESPONSIVE PER IL CHECKOUT SU MOBILE
-           ========================================================== */
+          3. CORREZIONE RESPONSIVE PER IL CHECKOUT SU MOBILE
+             Rimossi margini ridondanti per evitare decentramento.
+          ========================================================== */
         @media (max-width: 768px) {
             .checkout-container {
                 flex-direction: column;
-                margin: 0 10px;
+                /* Rimosso margin: 0 10px; (gestito dalla regola principale) */
+                width: 95%; /* Leggermente più largo sui mobile */
             }
             /* Su schermi piccoli la colonna destra deve avere un'altezza definita */
             .checkout-right { 
@@ -454,22 +467,22 @@
                 order: -1; /* Sposta l'immagine sopra il contenuto del form */
             }
             
-            /* **MODIFICA APPLICATA:** Rimuovi padding verticale eccessivo sullo stato */
+            /* Rimuovi padding verticale eccessivo sullo stato */
             #checkoutState, #orderConfirmationState {
                 padding: 10px 0; 
             }
 
-            /* **MODIFICA APPLICATA:** Riduci il padding interno del contenitore principale per risparmiare spazio */
+            /* Riduci il padding interno del contenitore principale per risparmiare spazio */
             .checkout-left {
                 padding: 15px; 
             }
 
-            /* **MODIFICA APPLICATA:** Riduci il padding della scatola del riepilogo */
+            /* Riduci il padding della scatola del riepilogo */
             .product-summary-box {
                 padding: 10px; 
             }
 
-            /* **MODIFICA APPLICATA:** Riduci la dimensione dei font nelle intestazioni */
+            /* Riduci la dimensione dei font nelle intestazioni */
             #catMaskState-title h1 {
                 font-size: 3em;
             }
@@ -794,6 +807,197 @@
             window.scrollTo(0, 0);
         }
 
+        // --- FUNZIONI CARRELLO E PRODOTTI ---
+
+        function updateCartCount() {
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartCount.textContent = totalItems;
+            cartCount.style.display = totalItems > 0 ? 'block' : 'none';
+        }
+
+        function calculateTotal() {
+            return cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        }
+
+        function addToCart(id) {
+            const quantityElement = document.getElementById(`qty-${id}`);
+            const quantity = parseInt(quantityElement.value);
+            const info = getProductInfo(id);
+
+            if (!info || quantity <= 0) return;
+
+            const existingItem = cart.find(item => item.id === id);
+
+            if (existingItem) {
+                existingItem.quantity += quantity;
+            } else {
+                cart.push({ id, name: info.name, price: info.price, quantity, img: info.img });
+            }
+
+            updateCartCount();
+            alert(`${quantity}x ${info.name} added to cart!`);
+        }
+
+        function renderCartItems() {
+            cartItemsContainer.innerHTML = '';
+            let total = 0;
+
+            if (cart.length === 0) {
+                cartItemsContainer.innerHTML = '<p>Your cart is empty.</p>';
+            } else {
+                cart.forEach(item => {
+                    const itemTotal = item.price * item.quantity;
+                    total += itemTotal;
+                    
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'cart-item';
+                    itemDiv.innerHTML = `
+                        <span>${item.quantity}x ${item.name}</span>
+                        <span>£${itemTotal.toFixed(2)} 
+                            <button onclick="removeFromCart(${item.id})" style="margin-left: 10px; background: none; border: none; cursor: pointer; color: red; font-weight: bold;">&times;</button>
+                        </span>
+                    `;
+                    cartItemsContainer.appendChild(itemDiv);
+                });
+            }
+
+            cartTotalDisplay.textContent = total.toFixed(2);
+        }
+
+        function removeFromCart(id) {
+            const index = cart.findIndex(item => item.id === id);
+            if (index > -1) {
+                cart.splice(index, 1);
+            }
+            updateCartCount();
+            renderCartItems();
+        }
+
+        function toggleCart() {
+            renderCartItems();
+            cartModal.style.display = cartModal.style.display === 'none' ? 'flex' : 'none';
+        }
+
+        function checkout() {
+            if (cart.length === 0) {
+                alert("Your cart is empty!");
+                return;
+            }
+
+            // Transizione da Modal a Checkout
+            cartModal.style.display = 'none';
+            shopState.classList.remove('visible');
+            shopState.style.display = 'none';
+            checkoutState.style.display = 'flex';
+            checkoutState.classList.add('visible');
+            document.title = 'Checkout';
+
+            renderCheckoutSummary();
+            window.scrollTo(0, 0);
+        }
+
+        function renderCheckoutSummary() {
+            checkoutSummaryContent.innerHTML = '';
+            let total = 0;
+
+            cart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                
+                const itemDiv = document.createElement('div');
+                itemDiv.innerHTML = `
+                    <div style="display: flex; align-items: center; margin-bottom: 15px; border-bottom: 1px dashed #ddd; padding-bottom: 10px;">
+                        <img src="${item.img}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px; margin-right: 10px;">
+                        <div style="flex-grow: 1;">
+                            <span style="font-weight: bold;">${item.name}</span><br>
+                            <small>Qty: ${item.quantity} x £${item.price.toFixed(2)}</small>
+                        </div>
+                        <span style="font-weight: bold;">£${itemTotal.toFixed(2)}</span>
+                    </div>
+                `;
+                checkoutSummaryContent.appendChild(itemDiv);
+            });
+
+            const totalGBP = total.toFixed(2);
+            const totalSOL = convertToSolana(total);
+
+            const totalDiv = document.createElement('div');
+            totalDiv.innerHTML = `
+                <div style="text-align: right; font-size: 1.2em; font-weight: bold; margin-top: 10px; padding-top: 10px; border-top: 2px solid #333;">
+                    Total: £${totalGBP}
+                </div>
+                <div class="solana-display" style="margin-top: 15px;">
+                    Pay with Solana: ${totalSOL} SOL
+                </div>
+                <button class="submit-order-button" onclick="submitOrder('${totalSOL}')">Confirm Order (Pay ${totalSOL} SOL)</button>
+            `;
+            checkoutSummaryContent.appendChild(totalDiv);
+        }
+
+        function submitOrder(solanaAmount) {
+            const orderNumber = generateOrderNumber();
+            
+            // Mostra la pagina di conferma
+            checkoutState.classList.remove('visible');
+            checkoutState.style.display = 'none';
+            orderConfirmationState.style.display = 'flex';
+            orderConfirmationState.classList.add('visible');
+            document.title = 'Order Confirmed';
+
+            renderOrderConfirmation(orderNumber, solanaAmount);
+            window.scrollTo(0, 0);
+        }
+
+        function renderOrderConfirmation(orderNumber, solanaAmount) {
+            orderDetailsContent.innerHTML = `
+                <p style="font-size: 1.5em; font-weight: bold; color: #007bff;">
+                    Order Number: ${orderNumber}
+                </p>
+                <p>Total amount to send:</p>
+                <div class="solana-display" style="font-size: 1.5em;">
+                    ${solanaAmount} SOL
+                </div>
+                <p style="margin-top: 15px;">Please send the exact amount of Solana to the following address:</p>
+                <div style="background-color: #eee; padding: 10px; border-radius: 5px; word-break: break-all;">
+                    <code id="solana-address">YourSolanaWalletAddressHere123456789</code>
+                </div>
+                <p style="margin-top: 15px; font-style: italic;">Your order will be processed after confirmation of payment and contact with the owner.</p>
+            `;
+        }
+
+        function finalizeOrder() {
+            // Svuota il carrello e torna allo shop neutro
+            cart = [];
+            updateCartCount();
+            
+            orderConfirmationState.classList.remove('visible');
+            orderConfirmationState.style.display = 'none';
+            
+            showShop(); // Torna alla pagina del negozio neutrale
+            window.scrollTo(0, 0);
+        }
+
+        // CRITICAL TRANSITION FUNCTION: From Cat Mask to Neutral Shop
+        function showShop() {
+            if (!secretAreaActive) return; // Blocco di sicurezza
+            
+            // Nasconde la Cat Mask
+            catMaskState.classList.add('hidden');
+            
+            // Mostra lo Shop Neutro
+            shopState.style.display = 'block';
+            shopState.classList.add('visible');
+            document.title = 'Direct Notes Purchase';
+            window.scrollTo(0, 0);
+        }
+
+        function tryToEnterShop() {
+            // Questo è il blocco di sicurezza quando si cerca di entrare dallo shop normale
+            if (secretAreaActive) {
+                alert("This area is only for cat accessories. If you were looking for something else, maybe check the kitty's favorite spot!");
+            }
+        }
+
         // --- INIZIALIZZAZIONE E LOOP ---
         
         // 1. Controlla lo stato globale immediatamente all'avvio
@@ -815,214 +1019,9 @@
             if (shutdownKey === OWNER_SHUTDOWN_KEY) {
                 // QUI DEVI INVIARE IL SEGNALE AL TUO SERVER PER CAMBIARE status.json a {"status": "closed"}
                 alert(`OWNER TRIGGER: La chiave segreta è stata rilevata. Ora devi inviare una richiesta al tuo server (API) per chiudere globalmente il file di stato. Una volta fatto, tutti gli utenti verranno reindirizzati entro 5 secondi.`);
-                // Esempio fittizio: fetch('/api/set_status?status=closed&key=' + OWNER_SHUTDOWN_KEY);
             }
+            updateCartCount(); // Inizializza il contatore del carrello
         });
-
-
-        // --- FUNZIONI DI TRANSIZIONE ---
-
-        // CRITICAL TRANSITION FUNCTION: From Cat Mask to Neutral Shop
-        function showShop() {
-            if (!secretAreaActive) return; // Blocco di sicurezza
-            
-            // Nasconde la Cat Mask
-            catMaskState.classList.add('hidden');
-            
-            // Mostra lo Shop Neutro
-            shopState.style.display = 'block';
-            shopState.classList.add('visible');
-            document.title = 'DIRECT NOTES PURCHASE';
-            
-            setTimeout(() => {
-                catMaskState.style.display = 'none';
-                window.scrollTo(0, 0);
-            }, 550);
-        }
-
-        // PROTECTION FUNCTION: Silent Loop on non-secret clicks on the mask
-        function tryToEnterShop() {
-            if (!secretAreaActive) {
-                // Se disattivato, mostra un messaggio di decoy
-                alert("The Kitty Shop is temporarily out of stock.");
-                return;
-            }
-            
-            if (cart.length === 0) {
-                window.location.reload();
-            } else {
-                toggleCart();
-            }
-        }
-        
-        // --- FUNZIONI CARRELLO/CHECKOUT ---
-
-        function updateCartCount() {
-            cartCount.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
-        }
-
-        function renderCart() {
-            cartItemsContainer.innerHTML = '';
-            let total = 0;
-
-            if (cart.length === 0) {
-                cartItemsContainer.innerHTML = '<p style="text-align: center; color: #777;">Your cart is empty.</p>';
-                cartTotalDisplay.textContent = '0.00';
-                return;
-            }
-
-            cart.forEach(item => {
-                const itemTotal = item.price * item.quantity;
-                total += itemTotal;
-                
-                const itemDiv = document.createElement('div');
-                itemDiv.className = 'cart-item';
-                itemDiv.innerHTML = `
-                    <span>${item.name} (${item.quantity}x)</span>
-                    <span>£${itemTotal.toFixed(2)} 
-                        <span style="color: red; cursor: pointer; margin-left: 10px;" onclick="removeFromCart(${item.id})">&times;</span>
-                    </span>
-                `;
-                cartItemsContainer.appendChild(itemDiv);
-            });
-            
-            cartTotalDisplay.textContent = total.toFixed(2);
-        }
-
-        function addToCart(id) {
-            if (!secretAreaActive) {
-                alert("Secure notes purchase is currently suspended globally.");
-                return;
-            }
-
-            const quantity = parseInt(document.getElementById(`qty-${id}`).value);
-            const product = getProductInfo(id);
-
-            if (!product) return;
-            
-            const existingItem = cart.find(item => item.id === id);
-
-            if (existingItem) {
-                existingItem.quantity += quantity;
-            } else {
-                cart.push({ id, name: product.name, price: product.price, quantity, img: product.img });
-            }
-
-            updateCartCount();
-            alert(`${quantity}x ${product.name} added to cart!`);
-        }
-
-        function removeFromCart(id) {
-            cart = cart.filter(item => item.id !== id);
-            renderCart();
-            updateCartCount();
-        }
-
-        function toggleCart() {
-            if (cartModal.style.display === 'flex') {
-                cartModal.style.display = 'none';
-            } else {
-                renderCart();
-                cartModal.style.display = 'flex';
-            }
-        }
-
-        function checkout() {
-            if (cart.length === 0) {
-                alert("Your cart is empty.");
-                return;
-            }
-
-            // Nasconde lo Shop
-            shopState.classList.remove('visible');
-            shopState.style.display = 'none';
-            cartModal.style.display = 'none';
-
-            // Mostra il Checkout
-            checkoutState.style.display = 'flex';
-            checkoutState.classList.add('visible');
-            document.title = 'Checkout';
-
-            renderCheckoutSummary();
-            window.scrollTo(0, 0);
-        }
-
-        function renderCheckoutSummary() {
-            let total = 0;
-            let summaryHTML = '';
-
-            cart.forEach(item => {
-                const itemTotal = item.price * item.quantity;
-                total += itemTotal;
-                
-                summaryHTML += `
-                    <div style="border-bottom: 1px dashed #ddd; padding-bottom: 15px; margin-bottom: 15px;">
-                        <img src="${item.img}" alt="${item.name}" class="summary-item-image">
-                        <div style="font-weight: bold;">${item.name} (x${item.quantity})</div>
-                        <div style="color: #007bff;">Total: £${itemTotal.toFixed(2)}</div>
-                    </div>
-                `;
-            });
-            
-            const solanaAmount = convertToSolana(total);
-
-            summaryHTML += `
-                <div class="checkout-item-details">
-                    <p style="text-align: right; font-size: 1.5em; font-weight: bold; color: #333;">TOTAL: £${total.toFixed(2)}</p>
-                    <div class="solana-display">
-                        Pay ${solanaAmount} SOL (Wallet: ABC...XYZ)
-                    </div>
-                </div>
-                <div style="margin-top: 20px;">
-                    <p style="font-size: 0.9em; color: #555;">Fill in your details for Order Confirmation:</p>
-                    <input type="text" id="wallet-address" placeholder="Your Solana Wallet Address" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px;">
-                    <input type="text" id="telegram-username" placeholder="Your Telegram @username" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px;">
-                    <button class="submit-order-button" onclick="submitOrder(${total})">Complete Order (Send SOL)</button>
-                    <button class="submit-order-button" style="background-color: #dc3545;" onclick="showCatMask()">Cancel Order</button>
-                </div>
-            `;
-            
-            checkoutSummaryContent.innerHTML = summaryHTML;
-        }
-
-        function submitOrder(total) {
-            const wallet = document.getElementById('wallet-address').value;
-            const telegram = document.getElementById('telegram-username').value;
-
-            if (!wallet || !telegram) {
-                alert("Please fill in both your Solana Wallet Address and Telegram @username.");
-                return;
-            }
-
-            // Esegue l'invio dell'ordine (logica fittizia)
-            const orderNumber = generateOrderNumber();
-            const solanaAmount = convertToSolana(total);
-
-            // Nasconde il Checkout
-            checkoutState.classList.remove('visible');
-            checkoutState.style.display = 'none';
-
-            // Mostra la Conferma
-            orderConfirmationState.style.display = 'flex';
-            orderConfirmationState.classList.add('visible');
-            document.title = 'Order Confirmed';
-
-            orderDetailsContent.innerHTML = `
-                <p><strong>Order Number:</strong> <span style="color: #007bff;">${orderNumber}</span></p>
-                <p><strong>Total Paid:</strong> £${total.toFixed(2)} / ${solanaAmount} SOL</p>
-                <p><strong>Your Telegram:</strong> <span style="color: #007bff;">${telegram}</span></p>
-                <p><strong>Your Wallet:</strong> <span style="color: #007bff;">${wallet.substring(0, 10)}...</span></p>
-                <p style="margin-top: 20px; color: #28a745; font-style: italic;">Your order is now pending. Please send the payment of <strong>${solanaAmount} SOL</strong> to the wallet address provided in the previous step and send your order number to our Telegram.</p>
-            `;
-
-            window.scrollTo(0, 0);
-        }
-
-        function finalizeOrder() {
-            cart = []; // Svuota il carrello
-            updateCartCount();
-            showCatMask();
-        }
     </script>
 </body>
 </html>
