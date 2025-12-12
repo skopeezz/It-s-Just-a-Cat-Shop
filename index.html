@@ -10,11 +10,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Chewy&display=swap" rel="stylesheet">
     
     <style>
-        /* ==========================================================
-          1. CORREZIONE GLOBALE SCORRIMENTO PC
-               Rimosso overflow-x superfluo sul body e min-height/overflow
-               sugli stati interni.
-             ========================================================== */
         html {
             /* Assicura che l'elemento principale prenda tutta l'altezza */
             height: 100%; 
@@ -33,7 +28,6 @@
             /* Rimosso overflow-x: hidden dal body per evitare conflitti */
         }
         
-        /* Assicuriamo che gli stati coprano il 100% dell'altezza minima definita nel body */
         #catMaskState, #shopState, #checkoutState, #orderConfirmationState {
             width: 100%;
             min-height: 100%; /* Si adatta all'altezza minima del body */
@@ -117,18 +111,6 @@
             border-radius: 15px;
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
             display: block;
-        }
-        
-        /* SECRET SPOT: The invisible area */
-        .secret-spot {
-        position: absolute;
-        top: 0px;
-        right: 0px;
-        width: 5px;
-        height: 5px;
-        cursor: pointer;
-        z-index: 10;
-        opacity: 0; /* Correggi per essere totalmente invisibile */
         }
         
         /* Products on Cat Mask */
@@ -378,16 +360,10 @@
             /* Rimosso overflow-y: auto e min-height: 100vh come correzione scroll */
         }
 
-        /* ==========================================================
-          2. CORREZIONE CHECKOUT PC: Centratura e Divisione
-               Aggiunto margin auto e modificata la flessibilità delle colonne.
-             ========================================================== */
         .checkout-container {
-            /* **MODIFICA CRITICA:** Centra il blocco orizzontalmente sul PC */
             margin: 20px auto; 
             display: flex;
             max-width: 1000px;
-            /* Utilizziamo il 90% per dare un po' di margine sui lati, specialmente su PC */
             width: 90%; 
             background: white;
             border-radius: 10px;
@@ -397,14 +373,12 @@
 
         /* *** NUOVA DIVISIONE LAYOUT CHECKOUT (60% / 40%) *** */
         .checkout-left {
-            /* 60% della larghezza per il Form/Riepilogo */
             flex: 3; 
             padding: 30px;
             background-color: #f8f9fa;
         }
 
         .checkout-right {
-            /* 40% della larghezza per l'Immagine di Sfondo */
             flex: 2; 
             background-image: url('https://i.imgur.com/SyCQXvm.gif');
             background-size: cover;
@@ -420,7 +394,6 @@
             box-sizing: border-box;
         }
         
-        /* *** CORREZIONE BUG IMMAGINE RIEPILOGO: Aggiunto un wrapper per l'immagine */
         .summary-item-wrapper {
             display: flex;
             align-items: center;
@@ -474,17 +447,11 @@
             border-radius: 5px;
         }
 
-        /* ==========================================================
-          3. CORREZIONE RESPONSIVE PER IL CHECKOUT SU MOBILE
-               Rimossi margini ridondanti per evitare decentramento.
-             ========================================================== */
+        
         @media (max-width: 768px) {
             .checkout-container {
                 flex-direction: column;
-                /* Rimosso margin: 0 10px; (gestito dalla regola principale) */
-                width: 95%; /* Leggermente più largo sui mobile */
             }
-            /* Su schermi piccoli la colonna destra deve avere un'altezza definita */
             .checkout-right { 
                 height: 200px;
                 order: -1; /* Sposta l'immagine sopra il contenuto del form */
@@ -527,7 +494,6 @@
 
         <div class="cat-image-container">
             <img src="https://images.unsplash.com/photo-1543852786-1cf6624b9987?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Cute Cat Looking" class="cat-hero-image">
-            <div class="secret-spot" id="secretSpot" title="Secret Area"></div>
         </div>
 
         <div id="maskProducts-container">
@@ -731,362 +697,343 @@
             <button class="checkout-button" onclick="checkout()">Proceed to Checkout</button>
         </div>
     </div>
+
+<script>
+    // --- Variabili e Costanti ---
+    const catMaskState = document.getElementById('catMaskState');
+    const shopState = document.getElementById('shopState');
+    const checkoutState = document.getElementById('checkoutState');
+    const orderConfirmationState = document.getElementById('orderConfirmationState');
+    const cartModal = document.getElementById('cartModal');
+    const cartCount = document.getElementById('cart-count');
+    const cartItemsContainer = document.getElementById('cart-items-container');
+    const cartTotalDisplay = document.getElementById('cart-total');
+    const checkoutTotalGBP = document.getElementById('checkout-total-gbp');
+    const checkoutTotalSolana = document.getElementById('checkout-total-solana');
+    const checkoutForm = document.getElementById('checkoutForm');
+    const orderDetailsContent = document.getElementById('order-details-content');
+    const checkoutSummaryContainer = document.getElementById('checkout-summary-container');
+    const checkoutSummaryTotal = document.getElementById('checkout-summary-total');
+
+    // ** Modifiche per accesso segreto protetto **
+    const TITLE_ELEMENT = document.getElementById('catMaskState-title');
+    const SECRET_PASSWORD = "4r5rg6";
+    let clickCount = 0;
+    let clickTimeout;
+    let isShopOpen = true; // Stato globale
+    // ----------------------------------------
+
+    let cart = [];
+    // 'secretAreaActive' rimosso
+    let lastOrder = null; 
     
-    <script>
-        const secretSpot = document.getElementById('secretSpot');
-        const catMaskState = document.getElementById('catMaskState');
-        const shopState = document.getElementById('shopState');
-        const checkoutState = document.getElementById('checkoutState');
-        const orderConfirmationState = document.getElementById('orderConfirmationState');
-        const cartModal = document.getElementById('cartModal');
-        const cartCount = document.getElementById('cart-count');
-        const cartItemsContainer = document.getElementById('cart-items-container');
-        const cartTotalDisplay = document.getElementById('cart-total');
-        const checkoutTotalGBP = document.getElementById('checkout-total-gbp');
-        const checkoutTotalSolana = document.getElementById('checkout-total-solana');
-        const checkoutForm = document.getElementById('checkoutForm');
-        const orderDetailsContent = document.getElementById('order-details-content');
-        // Aggiunti elementi per la correzione 1
-        const checkoutSummaryContainer = document.getElementById('checkout-summary-container');
-        const checkoutSummaryTotal = document.getElementById('checkout-summary-total');
+    const GLOBAL_STATUS_URL = '/It-s-Just-a-Cat-Shop/shop_status.json';
+    // 'OWNER_SHUTDOWN_KEY' rimosso
 
-        let cart = [];
-        let secretAreaActive = true;
-        let lastOrder = null; // Memorizza l'ultimo ordine per la conferma
-        
-        // **ATTENZIONE:** Il percorso deve includere il nome del repository per GitHub Pages.
-        const GLOBAL_STATUS_URL = '/It-s-Just-a-Cat-Shop/shop_status.json';
-        const OWNER_SHUTDOWN_KEY = 'YOUR_SECRET_CLOSURE_KEY_12345'; // CHIAVE CHE SOLO TU DEVI CONOSCERE
+    const SOLANA_RATE_PER_GBP = 0.015; 
+    
+    function convertToSolana(gbpAmount) { 
+        return (gbpAmount * SOLANA_RATE_PER_GBP).toFixed(6); 
+    } 
+    
+    function generateOrderNumber() { return 'ORD-' + Math.floor(Math.random() * 90000000 + 10000000); }
+    
+    function getProductInfo(id) {
+        const card = document.querySelector(`.product-card[data-id="${id}"]`);
+        if (!card) return null;
+        return {
+            id: id,
+            name: card.getAttribute('data-name'),
+            price: parseFloat(card.getAttribute('data-price')),
+            img: card.getAttribute('data-img')
+        };
+    }
+    
+    // --- GESTIONE CAMBIAMENTO STATO (PAGINA) ---
 
-        // Tasso di conversione (Esempio: 1 SOL = 66.66 GBP. 1 GBP = 0.015 SOL)
-        const SOLANA_RATE_PER_GBP = 0.015; 
-        
-        // 🛑 INIZIO DELLA CORREZIONE 2: Logica di Conversione Solana 🛑
-        function convertToSolana(gbpAmount) { 
-            // Se SOLANA_RATE_PER_GBP è il valore di 1 GBP in SOL (0.015 SOL/GBP),
-            // allora 1 SOL vale 1 / 0.015 = 66.66 GBP.
-            // Per convertire da GBP a SOL, dobbiamo dividere l'importo GBP per il valore di 1 SOL in GBP.
-            // Il valore di 1 SOL in GBP è 1 / SOLANA_RATE_PER_GBP (quindi 1 / 0.015).
-            // L'implementazione precedente moltiplicava per l'inverso, il che è corretto SOLO SE
-            // SOLANA_RATE_PER_GBP era inteso come 1 SOL in GBP.
-            // Dato il commento "1 GBP = 0.015 SOL", il tasso deve essere usato come moltiplicatore.
-            // Per 1 GBP -> 0.015 SOL. Per X GBP -> X * 0.015 SOL.
-            
-            // L'errore precedente era: return (gbpAmount * (1/SOLANA_RATE_PER_GBP)).toFixed(6); 
-            // che è equivalente a (gbpAmount * 66.66), sbagliato se 0.015 è il tasso GBP->SOL.
-            
-            // CORREZIONE: Usiamo il tasso fornito (0.015) direttamente per moltiplicare.
-            // Se SOLANA_RATE_PER_GBP è 0.015 (SOL per 1 GBP), la formula è:
-            return (gbpAmount * SOLANA_RATE_PER_GBP).toFixed(6); 
-        } 
-        // 🛑 FINE DELLA CORREZIONE 2: Logica di Conversione Solana 🛑
-        
-        function generateOrderNumber() { return 'ORD-' + Math.floor(Math.random() * 90000000 + 10000000); }
-        
-        function getProductInfo(id) {
-            const card = document.querySelector(`.product-card[data-id="${id}"]`);
-            if (!card) return null;
-            return {
-                id: id,
-                name: card.getAttribute('data-name'),
-                price: parseFloat(card.getAttribute('data-price')),
-                img: card.getAttribute('data-img')
-            };
+    function hideAllStates() {
+        [catMaskState, shopState, checkoutState, orderConfirmationState].forEach(state => {
+            state.classList.remove('visible');
+            state.classList.add('hidden');
+            setTimeout(() => {
+                state.style.display = 'none';
+            }, 500); 
+        });
+        cartModal.style.display = 'none'; 
+    }
+
+    // --- Logica di Blocco/Sblocco e Triplo Click (Modificata) ---
+
+    function toggleGlobalShopStatus() {
+        const action = prompt(`Il negozio è attualmente: ${isShopOpen ? 'APERTO' : 'CHIUSO'}.\n\nVuoi cambiare lo stato? Digita:\n- 'close' per chiudere\n- 'open' per aprire\n- Annulla per non fare nulla`);
+
+        if (action && action.toLowerCase() === 'close') {
+            isShopOpen = false;
+            alert("Sito chiuso globalmente. Gli utenti vedranno il messaggio di manutenzione.");
+        } else if (action && action.toLowerCase() === 'open') {
+            isShopOpen = true;
+            alert("Sito riaperto.");
         }
-        
-        // --- GESTIONE CAMBIAMENTO STATO (PAGINA) ---
+        showCatMask(); 
+    }
 
-        function hideAllStates() {
-            [catMaskState, shopState, checkoutState, orderConfirmationState].forEach(state => {
-                state.classList.remove('visible');
-                state.classList.add('hidden');
-                // Rimuovi il display:block/flex dopo la transizione (opzionale, ma pulisce)
-                setTimeout(() => {
-                    state.style.display = 'none';
-                }, 500); 
+    function tryToEnterSecretArea() {
+        const input = prompt("Accesso all'Area Gestione. Inserisci la password:");
+        
+        if (input && input === SECRET_PASSWORD) {
+            toggleGlobalShopStatus(); 
+        } else if (input !== null) {
+            alert("Accesso negato.");
+        }
+    }
+
+    TITLE_ELEMENT.addEventListener('click', function() {
+        clickCount++;
+        clearTimeout(clickTimeout);
+
+        if (clickCount >= 3) {
+            clickCount = 0; 
+            tryToEnterSecretArea(); 
+        } else {
+            clickTimeout = setTimeout(() => {
+                clickCount = 0;
+            }, 500); 
+        }
+    });
+
+    // ----------------------------------------------------
+
+    function showCatMask() {
+        hideAllStates();
+        catMaskState.style.display = 'flex'; 
+        setTimeout(() => {
+            catMaskState.classList.remove('hidden');
+            catMaskState.classList.add('visible');
+        }, 10);
+    }
+
+    // Funzione per accedere allo Shop (Modificata, pulita)
+    function showShop() {
+        hideAllStates();
+        shopState.style.display = 'block'; 
+        window.scrollTo(0, 0); 
+        setTimeout(() => {
+            shopState.classList.remove('hidden');
+            shopState.classList.add('visible');
+            renderCart(); 
+        }, 10);
+    }
+
+    // Funzione Pubblica Buy Now (Modificata per controllo isShopOpen)
+    window.tryToEnterShop = function() {
+        if (!isShopOpen) {
+            alert("Attualmente il negozio è chiuso per manutenzione. Ci scusiamo per il disagio.");
+            return;
+        }
+        showShop();
+    }
+
+    // --- Logica Carrello e Checkout (Invariata) ---
+
+    function updateCartTotal() {
+        const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        cartTotalDisplay.textContent = total.toFixed(2);
+        return total;
+    }
+    
+    function renderCheckoutSummary(total) {
+        
+        checkoutSummaryContainer.innerHTML = '';
+        
+        const detailsDiv = document.createElement('div');
+        detailsDiv.classList.add('checkout-item-details');
+        
+        if (cart.length === 0) {
+            detailsDiv.innerHTML = '<p style="text-align: center; color: #cc0000; font-style: italic;">Your cart is empty.</p>';
+        } else {
+            cart.forEach(item => {
+                const itemWrapper = document.createElement('div');
+                itemWrapper.classList.add('summary-item-wrapper');
+                
+                itemWrapper.innerHTML = `
+                    <img src="${item.img}" alt="${item.name}" class="summary-item-image">
+                    <div class="summary-item-details">
+                        <p style="margin: 0; font-weight: bold; font-size: 0.9em;">${item.name}</p>
+                        <p style="margin: 0; font-size: 0.8em; color: #555;">Qty: ${item.quantity} x £${item.price.toFixed(2)}</p>
+                    </div>
+                    <p style="margin: 0; font-weight: bold;">£${(item.price * item.quantity).toFixed(2)}</p>
+                `;
+                detailsDiv.appendChild(itemWrapper);
             });
-            cartModal.style.display = 'none'; // Assicura che la modale sia chiusa
-        }
-
-        // Funzione per tornare in modo pulito alla Cat Mask (Stato Default)
-        function showCatMask() {
-            hideAllStates();
-            catMaskState.style.display = 'flex'; // Riattiviamo la visualizzazione in flex
-            setTimeout(() => {
-                catMaskState.classList.remove('hidden');
-                catMaskState.classList.add('visible');
-            }, 10);
-        }
-
-        // Funzione per accedere allo Shop segreto
-        function showShop() {
-            if (!secretAreaActive) {
-                alert("The secure notes access is currently suspended globally.");
-                return;
-            }
-
-            hideAllStates();
-            // Usiamo 'block' per lo shop, per non forzare flex/grid sul body
-            shopState.style.display = 'block'; 
-                    
-            // Forza lo scroll in alto per un'esperienza più pulita
-            window.scrollTo(0, 0); 
-
-            setTimeout(() => {
-                shopState.classList.remove('hidden');
-                shopState.classList.add('visible');
-                renderCart(); // Aggiorna il carrello dopo il cambio di stato
-            }, 10);
-        }
-
-        // La funzione tryToEnterShop è usata dai pulsanti "Buy Now" della maschera
-        window.tryToEnterShop = function() {
-            if (!secretAreaActive) {
-                alert("The Kitty Shop is temporarily out of stock. Secure notes purchase has been suspended globally.");
-                return;
-            }
-            alert("Oops! This item is currently unavailable. Please check our exclusive selection inside.");
-        }
-
-        // --- LOGICA CARRELLO ---
-
-        function updateCartTotal() {
-            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            cartTotalDisplay.textContent = total.toFixed(2);
-            return total;
         }
         
-        // Funzione aggiunta/modificata per la correzione 1
-        function renderCheckoutSummary(total) {
-            // Svuota il contenuto
-            checkoutSummaryContainer.innerHTML = '';
+        checkoutSummaryContainer.appendChild(detailsDiv);
+
+        const totalPara = document.createElement('p');
+        totalPara.style.cssText = 'text-align: right; font-weight: bold; margin-top: 15px; border-top: 1px solid #ddd; padding-top: 10px;';
+        totalPara.innerHTML = `Total: £<span id="checkout-summary-total">${total.toFixed(2)}</span>`;
+        checkoutSummaryContainer.appendChild(totalPara);
+    }
+
+    function renderCart() {
+        cartItemsContainer.innerHTML = '';
+        cartCount.textContent = cart.length;
+
+        if (cart.length === 0) {
+            cartItemsContainer.innerHTML = '<p style="text-align: center; font-style: italic;">Your cart is empty.</p>';
+        } else {
+            cart.forEach((item, index) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.classList.add('cart-item');
+                itemDiv.innerHTML = `
+                    <span>${item.name} (${item.quantity})</span>
+                    <div style="display: flex; align-items: center;">
+                        <span>£${(item.price * item.quantity).toFixed(2)}</span>
+                        <button onclick="removeFromCart(${index})">Remove</button>
+                    </div>
+                `;
+                cartItemsContainer.appendChild(itemDiv);
+            });
+        }
+        updateCartTotal();
+    }
+
+    window.addToCart = function(id) {
+        const info = getProductInfo(id);
+        if (!info) return;
+
+        const quantity = parseInt(document.getElementById(`qty-${id}`).value);
+        const existingItemIndex = cart.findIndex(item => item.id === id);
+
+        if (existingItemIndex > -1) {
+            cart[existingItemIndex].quantity += quantity;
+        } else {
+            cart.push({ ...info, quantity });
+        }
+
+        renderCart();
+        alert(`${quantity} x ${info.name} added to cart!`);
+    }
+
+    window.removeFromCart = function(index) {
+        cart.splice(index, 1);
+        renderCart();
+        if (cart.length === 0) {
+            toggleCart(); 
+        }
+    }
+
+    window.toggleCart = function() {
+        cartModal.style.display = cartModal.style.display === 'flex' ? 'none' : 'flex';
+        if (cartModal.style.display === 'flex') {
+            renderCart();
+        }
+    }
+
+    window.checkout = function() {
+        if (cart.length === 0) {
+            alert("Your cart is empty!");
+            return;
+        }
+        
+        hideAllStates();
+        checkoutState.style.display = 'flex';
+        window.scrollTo(0, 0);
+
+        setTimeout(() => {
+            checkoutState.classList.remove('hidden');
+            checkoutState.classList.add('visible');
             
-            const detailsDiv = document.createElement('div');
-            detailsDiv.classList.add('checkout-item-details');
+            const totalGBP = updateCartTotal();
+            const totalSOL = convertToSolana(totalGBP); 
+
+            checkoutTotalGBP.textContent = totalGBP.toFixed(2);
+            checkoutTotalSolana.textContent = totalSOL; 
             
-            if (cart.length === 0) {
-                detailsDiv.innerHTML = '<p style="text-align: center; color: #cc0000; font-style: italic;">Your cart is empty.</p>';
-            } else {
-                cart.forEach(item => {
-                    const itemWrapper = document.createElement('div');
-                    itemWrapper.classList.add('summary-item-wrapper');
-                    
-                    itemWrapper.innerHTML = `
+            renderCheckoutSummary(totalGBP); 
+        }, 10);
+    }
+
+    // --- GESTIONE ORDINE (Invariata) ---
+
+    checkoutForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const solanaAddress = document.getElementById('solanaAddress').value;
+        const totalGBP = updateCartTotal();
+        const totalSOL = convertToSolana(totalGBP); 
+
+        lastOrder = {
+            orderNumber: generateOrderNumber(),
+            items: cart.map(item => ({
+                name: item.name,
+                quantity: item.quantity,
+                price: item.price,
+                total: (item.price * item.quantity).toFixed(2),
+                img: item.img
+            })),
+            solanaAddress: solanaAddress,
+            totalGBP: totalGBP.toFixed(2),
+            totalSOL: totalSOL,
+            timestamp: new Date().toISOString()
+        };
+        
+        showOrderConfirmation(lastOrder);
+        
+        console.log('Order Placed:', lastOrder); 
+    });
+
+
+    function showOrderConfirmation(order) {
+        hideAllStates();
+        orderConfirmationState.style.display = 'flex';
+        window.scrollTo(0, 0);
+
+        setTimeout(() => {
+            orderConfirmationState.classList.remove('hidden');
+            orderConfirmationState.classList.add('visible');
+            
+            let summaryHTML = `
+                <p style="margin-bottom: 25px;"><strong>Order ID:</strong> <span style="color: #007bff;">${order.orderNumber}</span></p>
+                <p><strong>Payment Address:</strong> <span style="word-break: break-all; font-family: monospace;">${order.solanaAddress}</span></p>
+                <p style="font-size: 1.2em; font-weight: bold; color: #ff5722;">Amount to Send: ${order.totalSOL} SOL</p>
+                <p style="font-size: 0.9em; color: #555;">(Equivalent to £${order.totalGBP})</p>
+                
+                <h4 style="margin-top: 25px; border-top: 1px solid #eee; padding-top: 15px;">Items Purchased:</h4>
+                <div id="confirmation-items-list">
+            `;
+
+            order.items.forEach(item => {
+                summaryHTML += `
+                    <div class="summary-item-wrapper" style="border-bottom: 1px dotted #ccc;">
                         <img src="${item.img}" alt="${item.name}" class="summary-item-image">
                         <div class="summary-item-details">
                             <p style="margin: 0; font-weight: bold; font-size: 0.9em;">${item.name}</p>
-                            <p style="margin: 0; font-size: 0.8em; color: #555;">Qty: ${item.quantity} x £${item.price.toFixed(2)}</p>
+                            <p style="margin: 0; font-size: 0.8em; color: #555;">Qty: ${item.quantity}</p>
                         </div>
-                        <p style="margin: 0; font-weight: bold;">£${(item.price * item.quantity).toFixed(2)}</p>
-                    `;
-                    detailsDiv.appendChild(itemWrapper);
-                });
-            }
-            
-            checkoutSummaryContainer.appendChild(detailsDiv);
-
-            const totalPara = document.createElement('p');
-            totalPara.style.cssText = 'text-align: right; font-weight: bold; margin-top: 15px; border-top: 1px solid #ddd; padding-top: 10px;';
-            totalPara.innerHTML = `Total: £<span id="checkout-summary-total">${total.toFixed(2)}</span>`;
-            checkoutSummaryContainer.appendChild(totalPara);
-        }
-
-        function renderCart() {
-            cartItemsContainer.innerHTML = '';
-            cartCount.textContent = cart.length;
-
-            if (cart.length === 0) {
-                cartItemsContainer.innerHTML = '<p style="text-align: center; font-style: italic;">Your cart is empty.</p>';
-            } else {
-                cart.forEach((item, index) => {
-                    const itemDiv = document.createElement('div');
-                    itemDiv.classList.add('cart-item');
-                    itemDiv.innerHTML = `
-                        <span>${item.name} (${item.quantity})</span>
-                        <div style="display: flex; align-items: center;">
-                            <span>£${(item.price * item.quantity).toFixed(2)}</span>
-                            <button onclick="removeFromCart(${index})">Remove</button>
-                        </div>
-                    `;
-                    cartItemsContainer.appendChild(itemDiv);
-                });
-            }
-            updateCartTotal();
-        }
-
-        window.addToCart = function(id) {
-            const info = getProductInfo(id);
-            if (!info) return;
-
-            const quantity = parseInt(document.getElementById(`qty-${id}`).value);
-            const existingItemIndex = cart.findIndex(item => item.id === id);
-
-            if (existingItemIndex > -1) {
-                cart[existingItemIndex].quantity += quantity;
-            } else {
-                cart.push({ ...info, quantity });
-            }
-
-            renderCart();
-            alert(`${quantity} x ${info.name} added to cart!`);
-        }
-
-        window.removeFromCart = function(index) {
-            cart.splice(index, 1);
-            renderCart();
-            if (cart.length === 0) {
-                toggleCart(); // Chiudi il carrello se è vuoto
-            }
-        }
-
-        window.toggleCart = function() {
-            cartModal.style.display = cartModal.style.display === 'flex' ? 'none' : 'flex';
-            if (cartModal.style.display === 'flex') {
-                renderCart();
-            }
-        }
-
-        window.checkout = function() {
-            if (cart.length === 0) {
-                alert("Your cart is empty!");
-                return;
-            }
-            
-            hideAllStates();
-            checkoutState.style.display = 'flex';
-            window.scrollTo(0, 0);
-
-            setTimeout(() => {
-                checkoutState.classList.remove('hidden');
-                checkoutState.classList.add('visible');
-                
-                const totalGBP = updateCartTotal();
-                const totalSOL = convertToSolana(totalGBP); // Corretta funzione di conversione (Correzione 2)
-
-                // Popola i totali (Correzione 2)
-                checkoutTotalGBP.textContent = totalGBP.toFixed(2);
-                checkoutTotalSolana.textContent = totalSOL; 
-                
-                // Popola il riepilogo (Correzione 1)
-                renderCheckoutSummary(totalGBP); 
-            }, 10);
-        }
-
-        // --- GESTIONE ORDINE ---
-
-        checkoutForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const solanaAddress = document.getElementById('solanaAddress').value;
-            const totalGBP = updateCartTotal();
-            const totalSOL = convertToSolana(totalGBP); // Corretta funzione di conversione
-
-            // Genera i dettagli dell'ordine
-            lastOrder = {
-                orderNumber: generateOrderNumber(),
-                items: cart.map(item => ({
-                    name: item.name,
-                    quantity: item.quantity,
-                    price: item.price,
-                    total: (item.price * item.quantity).toFixed(2),
-                    img: item.img
-                })),
-                solanaAddress: solanaAddress,
-                totalGBP: totalGBP.toFixed(2),
-                totalSOL: totalSOL,
-                // L'indirizzo di ricezione per i SOL. Questo dovrebbe essere la tua chiave pubblica
-                paymentAddress: '8F6H3hT5k9Lp...zC2xV1yB', 
-                timestamp: new Date().toISOString()
-            };
-            
-            showOrderConfirmation(lastOrder);
-            
-            // L'effettiva logica di invio dell'ordine andrebbe qui (es. a un server)
-            console.log('Order Placed:', lastOrder); 
-        });
-
-
-        function showOrderConfirmation(order) {
-            hideAllStates();
-            orderConfirmationState.style.display = 'flex';
-            window.scrollTo(0, 0);
-
-            setTimeout(() => {
-                orderConfirmationState.classList.remove('hidden');
-                orderConfirmationState.classList.add('visible');
-                
-                let summaryHTML = `
-                    <p style="margin-bottom: 25px;"><strong>Order ID:</strong> <span style="color: #007bff;">${order.orderNumber}</span></p>
-                    <p><strong>Payment Address:</strong> <span style="word-break: break-all; font-family: monospace;">${order.paymentAddress}</span></p>
-                    <p style="font-size: 1.2em; font-weight: bold; color: #ff5722;">Amount to Send: ${order.totalSOL} SOL</p>
-                    <p style="font-size: 0.9em; color: #555;">(Equivalent to £${order.totalGBP})</p>
-                    
-                    <h4 style="margin-top: 25px; border-top: 1px solid #eee; padding-top: 15px;">Items Purchased:</h4>
-                    <div id="confirmation-items-list">
+                        <p style="margin: 0; font-weight: bold;">£${item.total}</p>
+                    </div>
                 `;
+            });
 
-                order.items.forEach(item => {
-                    summaryHTML += `
-                        <div class="summary-item-wrapper" style="border-bottom: 1px dotted #ccc;">
-                            <img src="${item.img}" alt="${item.name}" class="summary-item-image">
-                            <div class="summary-item-details">
-                                <p style="margin: 0; font-weight: bold; font-size: 0.9em;">${item.name}</p>
-                                <p style="margin: 0; font-size: 0.8em; color: #555;">Qty: ${item.quantity}</p>
-                            </div>
-                            <p style="margin: 0; font-weight: bold;">£${item.total}</p>
-                        </div>
-                    `;
-                });
+            summaryHTML += `</div>`;
+            orderDetailsContent.innerHTML = summaryHTML;
+        }, 10);
+    }
 
-                summaryHTML += `</div>`;
-                orderDetailsContent.innerHTML = summaryHTML;
-            }, 10);
-        }
+    window.finalizeOrder = function() {
+        cart = []; 
+        lastOrder = null;
+        showShop(); 
+    }
 
-        window.finalizeOrder = function() {
-            cart = []; // Svuota il carrello
-            lastOrder = null;
-            showShop(); // Torna allo shop
-        }
+    // --- INIZIALIZZAZIONE ---
+
+    window.addEventListener('load', () => {
+        showCatMask();
+    });
 
 
-        // --- FUNZIONALITÀ SEGRETA (SHUTDOWN) ---
-
-        secretSpot.addEventListener('click', async function() {
-            if (!secretAreaActive) {
-                alert("Shop is already closed.");
-                return;
-            }
-            
-            const key = prompt("Enter Closure Key:");
-            if (key !== OWNER_SHUTDOWN_KEY) {
-                alert("Invalid Key. Access Denied.");
-                return;
-            }
-
-            const confirmClose = confirm("Are you sure you want to shut down the secure access globally?");
-            if (confirmClose) {
-                // Simulazione di un'API call per chiudere lo shop globalmente (non funzionante in un singolo file HTML)
-                // In un vero scenario, farebbe un fetch per aggiornare lo shop_status.json
-                secretAreaActive = false; // Chiudi a livello locale
-                alert("Secure Notes Shop has been suspended globally.");
-                showCatMask(); // Ritorna alla Cat Mask
-            }
-        });
-
-
-        // --- INITIALIZATION ---
-        
-        // Verifica lo stato iniziale dello shop all'avvio (simulato)
-        window.addEventListener('load', () => {
-             // Simulazione di una fetch per lo stato iniziale
-             // showCatMask(); // Mostra la cat mask di default
-             // Se lo stato è già 'shop', attiva showShop()
-             // Per default, iniziamo con showCatMask()
-             showCatMask();
-        });
-
-
-    </script>
+</script>
 </body>
 </html>
