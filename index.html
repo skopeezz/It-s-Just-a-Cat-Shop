@@ -697,7 +697,6 @@
             <button class="checkout-button" onclick="checkout()">Proceed to Checkout</button>
         </div>
     </div>
-
 <script>
     // --- Variabili e Costanti ---
     const catMaskState = document.getElementById('catMaskState');
@@ -715,20 +714,23 @@
     const checkoutSummaryContainer = document.getElementById('checkout-summary-container');
     const checkoutSummaryTotal = document.getElementById('checkout-summary-total');
 
-    // ** Modifiche per accesso segreto protetto **
+    // ** Rimosso da te, ma necessario se lo vuoi riattivare: **
+    // const secretSpot = document.getElementById('secretSpot'); 
+
+    // ** Variabili per il Triplo Click (Blocco Globale) **
     const TITLE_ELEMENT = document.getElementById('catMaskState-title');
     const SECRET_PASSWORD = "4r5rg6";
     let clickCount = 0;
     let clickTimeout;
-    let isShopOpen = true; // Stato globale
-    // ----------------------------------------
+    let isShopOpen = true; // Stato globale gestito dal Triplo Click
 
+    // ** Variabili per l'Area Segreta Originale **
     let cart = [];
-    // 'secretAreaActive' rimosso
+    let secretAreaActive = true; // Stato originale gestito da secretSpot
     let lastOrder = null; 
     
     const GLOBAL_STATUS_URL = '/It-s-Just-a-Cat-Shop/shop_status.json';
-    // 'OWNER_SHUTDOWN_KEY' rimosso
+    const OWNER_SHUTDOWN_KEY = 'YOUR_SECRET_CLOSURE_KEY_12345'; // Chiave per lo shut down originale (Assicurati che questo sia corretto)
 
     const SOLANA_RATE_PER_GBP = 0.015; 
     
@@ -762,7 +764,7 @@
         cartModal.style.display = 'none'; 
     }
 
-    // --- Logica di Blocco/Sblocco e Triplo Click (Modificata) ---
+    // --- Logica di Blocco/Sblocco e Triplo Click (Nuova Funzione) ---
 
     function toggleGlobalShopStatus() {
         const action = prompt(`Il negozio è attualmente: ${isShopOpen ? 'APERTO' : 'CHIUSO'}.\n\nVuoi cambiare lo stato? Digita:\n- 'close' per chiudere\n- 'open' per aprire\n- Annulla per non fare nulla`);
@@ -812,8 +814,13 @@
         }, 10);
     }
 
-    // Funzione per accedere allo Shop (Modificata, pulita)
+    // Funzione per accedere allo Shop (Ripristinato il controllo 'secretAreaActive' sulla funzione showShop)
     function showShop() {
+        if (!secretAreaActive) {
+            alert("The secure notes access is currently suspended globally.");
+            return;
+        }
+
         hideAllStates();
         shopState.style.display = 'block'; 
         window.scrollTo(0, 0); 
@@ -830,7 +837,10 @@
             alert("Attualmente il negozio è chiuso per manutenzione. Ci scusiamo per il disagio.");
             return;
         }
-        showShop();
+        
+        // Ho lasciato l'alert di debug che avevi tu, ma se vuoi solo entrare, usa showShop()
+        // alert("Oops! This item is currently unavailable. Please check our exclusive selection inside.");
+        showShop(); 
     }
 
     // --- Logica Carrello e Checkout (Invariata) ---
@@ -1027,13 +1037,43 @@
         showShop(); 
     }
 
+    // --- FUNZIONALITÀ SEGRETA ORIGINALE (Ripristinata) ---
+    
+    // ** Nota: se non hai più l'elemento HTML con id="secretSpot", questa sezione fallirà. **
+    // Assicurati di riaggiungere l'HTML e il CSS per l'elemento secretSpot, se lo vuoi funzionante.
+
+    // Il codice originale che gestiva lo shutdown è:
+    /*
+    secretSpot.addEventListener('click', async function() {
+        if (!secretAreaActive) {
+            alert("Shop is already closed.");
+            return;
+        }
+        
+        const key = prompt("Enter Closure Key:");
+        if (key !== OWNER_SHUTDOWN_KEY) {
+            alert("Invalid Key. Access Denied.");
+            return;
+        }
+
+        const confirmClose = confirm("Are you sure you want to shut down the secure access globally?");
+        if (confirmClose) {
+            // Qui andava la logica per modificare secretAreaActive o inviare lo stato al server.
+            // Poiché non ho la tua logica server-side, ho ripristinato solo la struttura base.
+            secretAreaActive = false;
+            alert("Secure notes access temporarily suspended.");
+        }
+    });
+    */
+
+    // Se l'elemento secretSpot non esiste, commenta o rimuovi l'addEventListener qui sopra
+
+    
     // --- INIZIALIZZAZIONE ---
 
     window.addEventListener('load', () => {
         showCatMask();
     });
-
-
 </script>
 </body>
 </html>
