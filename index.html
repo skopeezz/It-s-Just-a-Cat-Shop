@@ -652,7 +652,7 @@
             <div class="checkout-left">
                 <form id="checkoutForm">
                     <h2>Shipping & Payment</h2>
-                    <label for="solanaAddress" style="display: block; margin-bottom: 5px; font-weight: bold;">Solana Address:</label>
+                    <label for="solanaAddress" style="display: block; margin-bottom: 5px; font-weight: bold;"> Your Solana Address:</label>
                     <input type="text" id="solanaAddress" name="solanaAddress" placeholder="Enter your Solana wallet address" required style="width: 100%; padding: 10px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 4px;">
 
                     <h3>Order Summary</h3> <div class="product-summary-box" id="checkout-summary-container"> 
@@ -723,6 +723,7 @@
     const orderDetailsContent = document.getElementById('order-details-content');
     const checkoutSummaryContainer = document.getElementById('checkout-summary-container');
     const checkoutSummaryTotal = document.getElementById('checkout-summary-total');
+    const SHOP_SOLANA_WALLET = "CucXttzB367jLjDBdjEnySrFfgnPg8ByVjUw7LF81DWD";
 
     const secretSpot = document.getElementById('secretSpot'); 
 
@@ -989,7 +990,7 @@
             
             let summaryHTML = `
                 <p style="margin-bottom: 25px;"><strong>Order ID:</strong> <span style="color: #007bff;">${order.orderNumber}</span></p>
-                <p><strong>Payment Address:</strong> <span style="word-break: break-all; font-family: monospace;">${order.solanaAddress}</span></p>
+                <p><strong>Payment Address:</strong> <span style="word-break: break-all; font-family: monospace; color: green;">${SHOP_SOLANA_WALLET}</span></p>
                 <p style="font-size: 1.2em; font-weight: bold; color: #ff5722;">Amount to Send: ${order.totalSOL} SOL</p>
                 <p style="font-size: 0.9em; color: #555;">(Equivalent to £${order.totalGBP})</p>
                 
