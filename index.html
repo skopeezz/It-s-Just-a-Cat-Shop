@@ -826,267 +826,235 @@
         
         // Funzione per tornare in modo pulito alla Cat Mask (Stato Default)
         function showCatMask() {
-            // Nasconde tutti gli stati dello Shop
-            shopState.classList.remove('visible');
-            shopState.style.display = 'none';
-            checkoutState.classList.remove('visible');
-            checkoutState.style.display = 'none';
-            orderConfirmationState.classList.remove('visible');
-            orderConfirmationState.style.display = 'none';
-            
-            // Mostra la Cat Mask
-            catMaskState.style.display = 'flex';
-            catMaskState.classList.remove('hidden');
-            catMaskState.classList.add('visible');
-            document.title = 'MEOW HELLO - The Purrfect Place';
+        // 1. Nasconde lo stato del negozio e degli altri stati.
+        shopState.classList.remove('visible');
+        checkoutState.classList.remove('visible');
+        orderConfirmationState.classList.remove('visible');
+    
+        // 2. Mostra la Cat Mask
+    catMaskState.classList.add('visible');
+    document.body.style.backgroundColor = '#e0f7fa'; // Colore di sfondo della Cat Mask
+    window.scrollTo(0, 0);
+}
 
-            window.scrollTo(0, 0);
-        }
+// Funzione per mostrare lo stato del negozio
+function showShop() {
+    // 1. Nasconde la Cat Mask e gli altri stati.
+    catMaskState.classList.remove('visible');
+    checkoutState.classList.remove('visible');
+    orderConfirmationState.classList.remove('visible');
 
-        // --- FUNZIONI CARRELLO E PRODOTTI ---
+    // 2. Mostra lo stato del negozio.
+    shopState.classList.add('visible');
+    document.body.style.backgroundColor = '#f4f4f4'; // Colore di sfondo del Negozio
+    window.scrollTo(0, 0);
+    updateCartDisplay(); // Aggiorna il carrello in caso fosse stato modificato.
+}
 
-        function updateCartCount() {
-            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-            cartCount.textContent = totalItems;
-            cartCount.style.display = totalItems > 0 ? 'block' : 'none';
-        }
+// Funzione richiamata dal pulsante "Buy Now" nella Cat Mask
+function tryToEnterShop() {
+    if (secretAreaActive) {
+        showShop();
+    } else {
+        alert("The secure notes access has been suspended globally.");
+    }
+}
 
-        function calculateTotal() {
-            return cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        }
 
-        function addToCart(id) {
-            if (!secretAreaActive) {
-                tryToEnterShop(); // Usa l'alert di shutdown se attivo
-                return;
-            }
-            
-            const quantityElement = document.getElementById(`qty-${id}`);
-            const quantity = parseInt(quantityElement.value);
-            const info = getProductInfo(id);
+// --- GESTIONE CARRELLO E CHECKOUT ---
 
-            if (!info || quantity <= 0) return;
+function updateCartCount() {
+    cartCount.textContent = cart.length;
+}
 
-            const existingItem = cart.find(item => item.id === id);
+function calculateCartTotal() {
+    return cart.reduce((total, item) => total + (item.price * item.quantity), 0).toFixed(2);
+}
 
-            if (existingItem) {
-                existingItem.quantity += quantity;
-            } else {
-                cart.push({ id, name: info.name, price: info.price, quantity, img: info.img });
-            }
+function updateCartDisplay() {
+    cartItemsContainer.innerHTML = '';
+    let total = 0;
 
-            updateCartCount();
-            alert(`${quantity}x ${info.name} added to cart!`);
-        }
-        
-        // **NUOVA FUNZIONE**: Permette la rimozione di un elemento dal carrello
-        function removeItemFromCart(id) {
-            const index = cart.findIndex(item => item.id === id);
-            if (index > -1) {
-                cart.splice(index, 1);
-                renderCartItems();
-                updateCartCount();
-            }
-        }
-
-        function renderCartItems() {
-            cartItemsContainer.innerHTML = '';
-
-            if (cart.length === 0) {
-                cartItemsContainer.innerHTML = '<p>Your cart is empty, meow!</p>';
-                document.querySelector('#cartModal .checkout-button').disabled = true;
-            } else {
-                document.querySelector('#cartModal .checkout-button').disabled = false;
-                cart.forEach(item => {
-                    const itemTotal = (item.price * item.quantity).toFixed(2);
-                    const itemDiv = document.createElement('div');
-                    itemDiv.classList.add('cart-item');
-                    itemDiv.innerHTML = `
-                        <div>
-                            ${item.name} (x${item.quantity})
-                        </div>
-                        <div>
-                            £${itemTotal} 
-                            <button onclick="removeItemFromCart(${item.id})">Remove</button>
-                        </div>
-                    `;
-                    cartItemsContainer.appendChild(itemDiv);
-                });
-            }
-
-            cartTotalDisplay.textContent = calculateTotal().toFixed(2);
-        }
-
-        function toggleCart() {
-            renderCartItems();
-            cartModal.style.display = cartModal.style.display === 'flex' ? 'none' : 'flex';
-        }
-
-        // --- GESTIONE DEGLI STATI ---
-
-        function showShop() {
-            if (!secretAreaActive) {
-                tryToEnterShop();
-                return;
-            }
-
-            // Nasconde tutti gli stati eccetto lo shop
-            catMaskState.classList.remove('visible');
-            catMaskState.style.display = 'none';
-            checkoutState.classList.remove('visible');
-            checkoutState.style.display = 'none';
-            orderConfirmationState.classList.remove('visible');
-            orderConfirmationState.style.display = 'none';
-            cartModal.style.display = 'none';
-
-            // Mostra lo shop
-            shopState.style.display = 'block';
-            setTimeout(() => { // Timeout per l'effetto di transizione
-                shopState.classList.add('visible');
-                document.title = 'MEOW HELLO - Direct Notes Purchase';
-                window.scrollTo(0, 0);
-            }, 50);
-        }
-        
-        function tryToEnterShop() {
-            if (secretAreaActive) {
-                alert("You need the secret cat click to access the Direct Notes Purchase shop!");
-            } else {
-                executeGlobalShutdown(); // Se disattivato, mostra l'avviso di shutdown
-            }
-        }
-        
-        // **FUNZIONE AGGIUSTATA**: Gestisce il passaggio al Checkout
-        function checkout() {
-            if (cart.length === 0) {
-                alert("The cart is empty.");
-                return;
-            }
-
-            const totalGBP = calculateTotal();
-
-            // Aggiorna i totali nel Checkout
-            checkoutTotalGBP.textContent = totalGBP.toFixed(2);
-            checkoutTotalSolana.textContent = convertToSolana(totalGBP);
-            
-            // Genera il riepilogo nel Checkout
-            checkoutSummaryContent.innerHTML = cart.map(item => `
-                <div class="summary-item-wrapper">
-                    <img src="${item.img}" alt="${item.name}" class="summary-item-image">
-                    <div class="summary-item-details">
-                        <p style="font-weight: bold; margin: 0;">${item.name}</p>
-                        <p style="margin: 0; font-size: 0.9em;">Quantity: ${item.quantity}</p>
-                        <p style="margin: 0; font-style: italic;">Price: £${(item.price * item.quantity).toFixed(2)}</p>
-                    </div>
-                </div>
-            `).join('');
-
-            // Nasconde la modal e lo stato Shop
-            cartModal.style.display = 'none';
-            shopState.classList.remove('visible');
-            shopState.style.display = 'none';
-
-            // Mostra lo stato Checkout
-            checkoutState.style.display = 'flex';
-            setTimeout(() => {
-                checkoutState.classList.add('visible');
-                document.title = 'MEOW HELLO - Checkout';
-                window.scrollTo(0, 0);
-            }, 50);
-        }
-        
-        // **NUOVA FUNZIONE/CORREZIONE**: Gestisce la sottomissione del form
-        checkoutForm.addEventListener('submit', function(event) {
-            event.preventDefault();
-            
-            const solanaAddress = document.getElementById('solanaAddress').value.trim();
-            if (!solanaAddress) {
-                alert("Please enter a valid Solana address.");
-                return;
-            }
-            
-            const orderNumber = generateOrderNumber();
-            const totalGBP = calculateTotal();
-            const totalSOL = convertToSolana(totalGBP);
-            
-            lastOrder = {
-                orderNumber,
-                solanaAddress,
-                totalGBP: totalGBP.toFixed(2),
-                totalSOL,
-                items: cart
-            };
-
-            // Nasconde lo stato Checkout
-            checkoutState.classList.remove('visible');
-            checkoutState.style.display = 'none';
-
-            // Genera il contenuto della conferma
-            renderOrderConfirmation();
-            
-            // Mostra lo stato di conferma
-            orderConfirmationState.style.display = 'flex';
-            setTimeout(() => {
-                orderConfirmationState.classList.add('visible');
-                document.title = 'MEOW HELLO - Order Confirmation';
-                window.scrollTo(0, 0);
-            }, 50);
-
-        });
-        
-        // **NUOVA FUNZIONE**: Renderizza il contenuto della conferma d'ordine
-        function renderOrderConfirmation() {
-            if (!lastOrder) return;
-            
-            orderDetailsContent.innerHTML = `
-                <p style="font-size: 1.2em; font-weight: bold;">Order Number: <span id="display-order-number" style="color: #007bff;">${lastOrder.orderNumber}</span></p>
-                <p>Solana Address for delivery: <strong>${lastOrder.solanaAddress}</strong></p>
-                
-                <h4 style="margin-top: 20px;">Items:</h4>
-                ${lastOrder.items.map(item => `
-                    <div class="checkout-item-details">
-                        <p style="margin: 0;"><strong>${item.name}</strong> (x${item.quantity})</p>
-                        <p style="margin: 0; font-size: 0.9em;">Price: £${(item.price * item.quantity).toFixed(2)}</p>
-                    </div>
-                `).join('')}
-                
-                <h3 style="margin-top: 20px; border-top: 1px solid #ccc; padding-top: 10px;">
-                    Total to pay: <span style="color: #28a745;">${lastOrder.totalSOL} SOL</span>
-                </h3>
+    if (cart.length === 0) {
+        cartItemsContainer.innerHTML = '<p>Your cart is empty.</p>';
+    } else {
+        cart.forEach((item, index) => {
+            const itemElement = document.createElement('div');
+            itemElement.classList.add('cart-item');
+            itemElement.innerHTML = `
+                <span>${item.name} (${item.quantity}x)</span>
+                <span>£${(item.price * item.quantity).toFixed(2)} 
+                    <button onclick="removeFromCart(${index})">Remove</button>
+                </span>
             `;
-            
-            // NOTA: Qui dovresti anche visualizzare l'indirizzo SOL a cui l'utente deve inviare
-            // Per ora, lo spazio per l'indirizzo di pagamento è omesso per mantenere il codice pulito,
-            // ma in una vera applicazione, dovrebbe essere qui.
-        }
+            cartItemsContainer.appendChild(itemElement);
+            total += item.price * item.quantity;
+        });
+    }
 
-        // **FUNZIONE AGGIUSTATA**: Resetta lo stato e torna al negozio
-        function finalizeOrder() {
-            cart = []; // Svuota il carrello dopo aver completato l'ordine
-            updateCartCount();
-            lastOrder = null;
-            document.getElementById('solanaAddress').value = ''; // Pulisce l'indirizzo
-            showShop(); // Torna allo stato del negozio
-        }
+    cartTotalDisplay.textContent = calculateCartTotal();
+    updateCartCount();
+}
 
-        // --- INIZIALIZZAZIONE ---
+window.addToCart = function(id) {
+    const info = getProductInfo(id);
+    const quantitySelect = document.getElementById(`qty-${id}`);
+    const quantity = parseInt(quantitySelect.value);
 
-        // Attiva il gestore click per il "Secret Spot" solo se lo stato globale lo consente
-        if (secretAreaActive) {
-            secretSpot.addEventListener('click', showShop);
+    if (info && quantity > 0) {
+        const existingItemIndex = cart.findIndex(item => item.id === id);
+        if (existingItemIndex > -1) {
+            cart[existingItemIndex].quantity += quantity;
         } else {
-            // Se non attivo di default, disabilita subito il "Buy Now"
-            executeGlobalShutdown();
+            cart.push({ id, ...info, quantity });
         }
-        
-        // Imposta l'azione per i pulsanti "Buy Now" della Cat Mask
-        window.tryToEnterShop = tryToEnterShop;
+        updateCartCount();
+        alert(`${quantity}x ${info.name} added to cart!`);
+    } else {
+        alert("Please select a valid quantity.");
+    }
+}
 
-        // Esegui il controllo dello stato globale all'avvio
-        checkGlobalStatus();
-        // Controlla lo stato ogni 30 secondi (per catturare il shutdown tempestivamente)
-        setInterval(checkGlobalStatus, 30000); 
+window.removeFromCart = function(index) {
+    cart.splice(index, 1);
+    updateCartDisplay();
+}
 
-    </script>
+window.toggleCart = function() {
+    cartModal.style.display = cartModal.style.display === 'none' ? 'flex' : 'none';
+    if (cartModal.style.display === 'flex') {
+        updateCartDisplay();
+    }
+}
+
+// *** FUNZIONE CRITICA PER IL TUO PROBLEMA: CHECKOUT ***
+window.checkout = function() {
+    if (cart.length === 0) {
+        alert("Your cart is empty. Add products before checking out.");
+        return;
+    }
+    
+    // Nasconde il carrello modale
+    toggleCart(); 
+    
+    // Chiama la funzione per mostrare lo stato di checkout
+    showCheckout();
+}
+
+function showCheckout() {
+    // 1. Nasconde gli altri stati
+    shopState.classList.remove('visible');
+    catMaskState.classList.remove('visible');
+    orderConfirmationState.classList.remove('visible');
+
+    // 2. Mostra lo stato di checkout
+    checkoutState.classList.add('visible');
+    document.body.style.backgroundColor = '#f4f4f4'; 
+    window.scrollTo(0, 0);
+    
+    const totalGBP = parseFloat(calculateCartTotal());
+    const totalSOL = convertToSolana(totalGBP);
+    
+    // Aggiorna i totali nel riepilogo del checkout
+    checkoutTotalGBP.textContent = totalGBP.toFixed(2);
+    checkoutTotalSolana.textContent = totalSOL;
+    
+    // Qui andrebbe la logica per popolare il riepilogo dei prodotti nel checkoutState, 
+    // ma dato che non c'è un elemento summary visibile nel tuo HTML, ho omesso quella parte.
+}
+
+// --- LOGICA DI CONFERMA ORDINE ---
+
+checkoutForm.addEventListener('submit', function(e) {
+    e.preventDefault(); 
+
+    const solanaAddress = document.getElementById('solanaAddress').value.trim();
+    if (!solanaAddress) {
+        alert('Please enter your Solana address.');
+        return;
+    }
+
+    // Qui avverrebbe l'invio a un server reale. Per questo esempio, simuliamo l'ordine.
+    const totalGBP = parseFloat(calculateCartTotal());
+    const totalSOL = convertToSolana(totalGBP);
+    const orderNumber = generateOrderNumber();
+
+    lastOrder = {
+        number: orderNumber,
+        address: solanaAddress,
+        totalGBP: totalGBP.toFixed(2),
+        totalSOL: totalSOL,
+        items: [...cart] // Copia del carrello
+    };
+
+    // Mostra la schermata di conferma
+    showOrderConfirmation(lastOrder);
+
+    // Resetta il carrello dopo l'ordine simulato
+    cart = []; 
+    updateCartCount();
+});
+
+
+function showOrderConfirmation(order) {
+    // 1. Nasconde gli altri stati
+    shopState.classList.remove('visible');
+    catMaskState.classList.remove('visible');
+    checkoutState.classList.remove('visible');
+
+    // 2. Mostra la conferma
+    orderConfirmationState.classList.add('visible');
+    document.body.style.backgroundColor = '#f4f4f4'; 
+    window.scrollTo(0, 0);
+
+    let itemsHtml = order.items.map(item => `
+        <div class="summary-item-wrapper">
+            <img src="${item.img}" alt="${item.name}" class="summary-item-image">
+            <div class="summary-item-details">
+                <p style="margin: 0; font-weight: bold;">${item.name}</p>
+                <p style="margin: 0; font-size: 0.9em;">Qty: ${item.quantity} | Total: £${(item.price * item.quantity).toFixed(2)}</p>
+            </div>
+        </div>
+    `).join('');
+
+    orderDetailsContent.innerHTML = `
+        <p style="font-size: 1.1em; color: #007bff; font-weight: bold;">Order #: ${order.number}</p>
+        <div class="checkout-item-details">
+            ${itemsHtml}
+        </div>
+        <p style="font-weight: bold; text-align: right; margin-top: 15px;">TOTAL: £${order.totalGBP} (~${order.totalSOL} SOL)</p>
+        <p style="font-size: 0.9em; color: #555;">Delivery Address (Solana Address): ${order.address}</p>
+    `;
+}
+
+window.finalizeOrder = function() {
+    lastOrder = null;
+    showShop();
+}
+
+// --- INIZIALIZZAZIONE ---
+document.addEventListener('DOMContentLoaded', () => {
+    // Inizializzazione della logica di "shutdown"
+    if (secretSpot) {
+        secretSpot.addEventListener('click', showShop);
+    }
+    
+    // Eseguiamo il controllo dello stato globale all'inizio e poi ogni 5 minuti (300000ms)
+    checkGlobalStatus();
+    setInterval(checkGlobalStatus, 300000); 
+
+    // Rimuovi l'ultima classe `visible` per far sì che solo catMaskState sia visibile all'avvio
+    if (shopState.classList.contains('visible')) shopState.classList.remove('visible');
+    if (checkoutState.classList.contains('visible')) checkoutState.classList.remove('visible');
+    if (orderConfirmationState.classList.contains('visible')) orderConfirmationState.classList.remove('visible');
+
+    // Assicurati che lo stato iniziale sia sempre la cat mask (a meno di un shutdown)
+    if (secretAreaActive) {
+        showCatMask(); 
+    } else {
+        executeGlobalShutdown();
+    }
+});
+</script>
 </body>
 </html>
